@@ -10,6 +10,12 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import EspaceClient from "./pages/EspaceClient";
 import Prospects from "./pages/Prospects";
+import Dossiers from "./pages/Dossiers";
+import Documents from "./pages/Documents";
+import Partenaires from "./pages/Partenaires";
+import Commissions from "./pages/Commissions";
+import Analyses from "./pages/Analyses";
+import Parametres from "./pages/Parametres";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -60,17 +66,7 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="courtier">
                   <CourtierLayout>
-                    <div>Dossiers</div>
-                  </CourtierLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/relances"
-              element={
-                <ProtectedRoute requiredRole="courtier">
-                  <CourtierLayout>
-                    <div>Relances</div>
+                    <Dossiers />
                   </CourtierLayout>
                 </ProtectedRoute>
               }
@@ -80,7 +76,7 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="courtier">
                   <CourtierLayout>
-                    <div>Documents</div>
+                    <Documents />
                   </CourtierLayout>
                 </ProtectedRoute>
               }
@@ -90,7 +86,7 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="courtier">
                   <CourtierLayout>
-                    <div>Partenaires</div>
+                    <Partenaires />
                   </CourtierLayout>
                 </ProtectedRoute>
               }
@@ -100,17 +96,7 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="courtier">
                   <CourtierLayout>
-                    <div>Commissions</div>
-                  </CourtierLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/automatisations"
-              element={
-                <ProtectedRoute requiredRole="courtier">
-                  <CourtierLayout>
-                    <div>Automatisations</div>
+                    <Commissions />
                   </CourtierLayout>
                 </ProtectedRoute>
               }
@@ -120,7 +106,7 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="courtier">
                   <CourtierLayout>
-                    <div>Analyses</div>
+                    <Analyses />
                   </CourtierLayout>
                 </ProtectedRoute>
               }
@@ -130,7 +116,7 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="courtier">
                   <CourtierLayout>
-                    <div>Paramètres</div>
+                    <Parametres />
                   </CourtierLayout>
                 </ProtectedRoute>
               }

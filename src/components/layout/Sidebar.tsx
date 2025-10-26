@@ -3,11 +3,9 @@ import {
   LayoutDashboard, 
   Users, 
   FolderOpen, 
-  Bell,
   FileText,
   Handshake,
   DollarSign,
-  Zap,
   BarChart3,
   Settings,
   LogOut
@@ -20,11 +18,9 @@ const menuItems = [
   { icon: LayoutDashboard, label: 'Tableau de bord', path: '/dashboard' },
   { icon: Users, label: 'Prospects', path: '/prospects' },
   { icon: FolderOpen, label: 'Dossiers', path: '/dossiers' },
-  { icon: Bell, label: 'Relances', path: '/relances' },
   { icon: FileText, label: 'Documents', path: '/documents' },
   { icon: Handshake, label: 'Partenaires', path: '/partenaires' },
   { icon: DollarSign, label: 'Commissions', path: '/commissions' },
-  { icon: Zap, label: 'Automatisations', path: '/automatisations' },
   { icon: BarChart3, label: 'Analyses', path: '/analyses' },
   { icon: Settings, label: 'Paramètres', path: '/parametres' },
 ];
