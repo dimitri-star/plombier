@@ -80,8 +80,55 @@ export default function Auth() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
-      <div className="w-full max-w-5xl">
+    <>
+      <style>{`
+        .auth-button-custom {
+          padding: 12px 30px;
+          border-radius: 50px;
+          cursor: pointer;
+          border: 0;
+          background-color: white;
+          box-shadow: rgb(0 0 0 / 5%) 0 0 8px;
+          letter-spacing: 1.5px;
+          text-transform: uppercase;
+          font-size: 13px;
+          transition: all 0.5s ease;
+          color: #000;
+          width: 100%;
+          font-weight: 600;
+        }
+
+        .auth-button-custom:hover {
+          letter-spacing: 3px;
+          background-color: #ff8c00;
+          color: white;
+          box-shadow: rgba(255, 140, 0, 0.5) 0px 7px 29px 0px;
+        }
+
+        .auth-button-custom:active {
+          letter-spacing: 3px;
+          background-color: #ff8c00;
+          color: white;
+          box-shadow: rgba(255, 140, 0, 0.3) 0px 0px 0px 0px;
+          transform: translateY(10px);
+          transition: 100ms;
+        }
+
+        .auth-button-custom:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        input[type="password"] {
+          color: white !important;
+        }
+
+        input[type="password"]::placeholder {
+          color: rgba(255, 255, 255, 0.5) !important;
+        }
+      `}</style>
+      <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
+        <div className="w-full max-w-5xl">
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-primary">Courtier Pro Flow</h1>
           <p className="mt-2 text-muted-foreground">
@@ -122,13 +169,15 @@ export default function Auth() {
                         id="courtier-password"
                         name="password"
                         type="password"
+                        placeholder="Votre mot de passe"
+                        className="text-white"
                         required
                       />
                     </div>
-                    <Button type="submit" className="w-full" disabled={loading}>
-                      {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    <button type="submit" className="auth-button-custom" disabled={loading}>
+                      {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin inline-block" />}
                       Se connecter
-                    </Button>
+                    </button>
                   </form>
                 </CardContent>
               </Card>
@@ -160,13 +209,15 @@ export default function Auth() {
                         id="client-password"
                         name="password"
                         type="password"
+                        placeholder="Votre mot de passe"
+                        className="text-white"
                         required
                       />
                     </div>
-                    <Button type="submit" className="w-full" disabled={loading}>
-                      {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    <button type="submit" className="auth-button-custom" disabled={loading}>
+                      {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin inline-block" />}
                       Se connecter
-                    </Button>
+                    </button>
                   </form>
                 </CardContent>
               </Card>
@@ -213,13 +264,15 @@ export default function Auth() {
                         id="signup-courtier-password"
                         name="password"
                         type="password"
+                        placeholder="Votre mot de passe"
+                        className="text-white"
                         required
                       />
                     </div>
-                    <Button type="submit" className="w-full" disabled={loading}>
-                      {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    <button type="submit" className="auth-button-custom" disabled={loading}>
+                      {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin inline-block" />}
                       Créer mon compte courtier
-                    </Button>
+                    </button>
                   </form>
                 </TabsContent>
 
@@ -249,13 +302,15 @@ export default function Auth() {
                         id="signup-client-password"
                         name="password"
                         type="password"
+                        placeholder="Votre mot de passe"
+                        className="text-white"
                         required
                       />
                     </div>
-                    <Button type="submit" className="w-full" disabled={loading}>
-                      {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    <button type="submit" className="auth-button-custom" disabled={loading}>
+                      {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin inline-block" />}
                       Créer mon compte client
-                    </Button>
+                    </button>
                   </form>
                 </TabsContent>
               </Tabs>
@@ -267,11 +322,13 @@ export default function Auth() {
           <Button
             variant="link"
             onClick={() => setIsSignUp(!isSignUp)}
+            className="text-base font-medium hover:underline"
           >
             {isSignUp ? 'Déjà un compte ? Se connecter' : 'Pas encore de compte ? S\'inscrire'}
           </Button>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
