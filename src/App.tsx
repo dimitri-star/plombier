@@ -30,7 +30,7 @@ function CourtierLayout({ children }: { children: React.ReactNode }) {
       <div className="flex min-h-screen w-full">
         <Sidebar />
         <main className="ml-64 flex-1 p-8">
-          <div className="max-w-[calc(100vw-18rem)]">{children}</div>
+          <div className="max-w-[calc(100vw-20rem)]">{children}</div>
         </main>
       </div>
     </GlowBackground>
