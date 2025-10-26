@@ -10,9 +10,11 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Trash2, Moon, Sun, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useTheme } from '@/hooks/use-theme';
 
 export default function Parametres() {
   const { toast } = useToast();
+  const { theme, toggleTheme } = useTheme();
   
   const [profile, setProfile] = useState({
     nom: 'Jean Dupont',
@@ -45,7 +47,6 @@ export default function Parametres() {
     },
   ]);
 
-  const [theme, setTheme] = useState<'clair' | 'sombre'>('clair');
   const [openUserDialog, setOpenUserDialog] = useState(false);
 
   const handleSaveProfile = (e: React.FormEvent) => {
@@ -73,12 +74,11 @@ export default function Parametres() {
     });
   };
 
-  const toggleTheme = () => {
-    const newTheme = theme === 'clair' ? 'sombre' : 'clair';
-    setTheme(newTheme);
+  const handleToggleTheme = () => {
+    toggleTheme();
     toast({
       title: 'Thème changé',
-      description: `Thème ${newTheme} activé`,
+      description: `Thème ${theme === 'dark' ? 'clair' : 'sombre'} activé`,
     });
   };
 
@@ -286,15 +286,19 @@ export default function Parametres() {
                 </div>
                 <div className="flex items-center gap-3">
                   <Button
-                    variant={theme === 'clair' ? 'default' : 'outline'}
-                    onClick={() => setTheme('clair')}
+                    variant={theme === 'light' ? 'default' : 'outline'}
+                    onClick={() => {
+                      if (theme === 'dark') handleToggleTheme();
+                    }}
                   >
                     <Sun className="mr-2 h-4 w-4" />
                     Clair
                   </Button>
                   <Button
-                    variant={theme === 'sombre' ? 'default' : 'outline'}
-                    onClick={() => setTheme('sombre')}
+                    variant={theme === 'dark' ? 'default' : 'outline'}
+                    onClick={() => {
+                      if (theme === 'light') handleToggleTheme();
+                    }}
                   >
                     <Moon className="mr-2 h-4 w-4" />
                     Sombre

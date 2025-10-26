@@ -33,10 +33,24 @@ export function Sidebar() {
       <div className="flex h-full flex-col">
         {/* Header */}
         <div className="border-b p-6">
-          <h1 className="text-xl font-bold text-primary">Courtier Pro Flow</h1>
-          {profile && (
-            <p className="mt-1 text-sm text-muted-foreground">{profile.nom}</p>
-          )}
+          <div className="flex items-center gap-3">
+            {/* Logo MGC dans un carré arrondi */}
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted">
+              <img 
+                src="/logo-mgc.png" 
+                alt="MGC Logo" 
+                className="h-8 w-8 object-contain"
+              />
+            </div>
+            
+            {/* Titre et nom */}
+            <div>
+              <h1 className="text-sm font-bold text-foreground">Courtier Gestion Pro</h1>
+              {profile && (
+                <p className="text-xs text-muted-foreground">{profile.nom}</p>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Navigation */}
