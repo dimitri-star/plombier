@@ -104,7 +104,7 @@ export default function Dashboard() {
       {/* Cartes de résumé */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {/* Total de prospects */}
-        <Card className="border-l-4 border-l-blue-500">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Total de prospects
@@ -120,7 +120,7 @@ export default function Dashboard() {
         </Card>
 
         {/* Dossiers en cours */}
-        <Card className="border-l-4 border-l-orange-500">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Dossiers en cours
@@ -136,7 +136,7 @@ export default function Dashboard() {
         </Card>
 
         {/* Commissions encaissées */}
-        <Card className="border-l-4 border-l-green-500">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Commissions encaissées
@@ -152,7 +152,7 @@ export default function Dashboard() {
         </Card>
 
         {/* Taux de conversion */}
-        <Card className="border-l-4 border-l-purple-500">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Taux de conversion

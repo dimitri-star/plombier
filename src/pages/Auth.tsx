@@ -21,8 +21,7 @@ export default function Auth() {
   // Redirect if already logged in
   useEffect(() => {
     if (user && profile) {
-      const redirectPath = profile.role === 'courtier' ? '/dashboard' : '/espace-client';
-      navigate(redirectPath, { replace: true });
+      navigate('/welcome', { replace: true });
     }
   }, [user, profile, navigate]);
 

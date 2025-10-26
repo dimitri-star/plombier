@@ -7,7 +7,10 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { GlowBackground } from "@/components/ui/glow-background";
+import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
+import Welcome from "./pages/Welcome";
 import Dashboard from "./pages/Dashboard";
 import EspaceClient from "./pages/EspaceClient";
 import Prospects from "./pages/Prospects";
@@ -23,10 +26,14 @@ const queryClient = new QueryClient();
 
 function CourtierLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen w-full">
-      <Sidebar />
-      <main className="ml-64 flex-1 p-8">{children}</main>
-    </div>
+    <GlowBackground className="min-h-screen">
+      <div className="flex min-h-screen w-full">
+        <Sidebar />
+        <main className="ml-64 flex-1 p-8">
+          <div className="max-w-[calc(100vw-18rem)]">{children}</div>
+        </main>
+      </div>
+    </GlowBackground>
   );
 }
 
@@ -39,8 +46,17 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
           <Routes>
-            <Route path="/" element={<Navigate to="/auth" replace />} />
+            <Route path="/" element={<Landing />} />
+            <Route path="/landing" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
+            <Route 
+              path="/welcome" 
+              element={
+                <ProtectedRoute requiredRole="any">
+                  <Welcome />
+                </ProtectedRoute>
+              } 
+            />
             
             {/* Routes Courtier */}
             <Route

@@ -29,13 +29,13 @@ export function Sidebar() {
   const { profile, signOut } = useAuth();
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r bg-card">
+    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-white/10 bg-black">
       <div className="flex h-full flex-col">
         {/* Header */}
-        <div className="border-b p-6">
+        <div className="border-b border-white/10 p-6">
           <div className="flex items-center gap-3">
             {/* Logo MGC dans un carré arrondi */}
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white/5 border border-yellow-500/20">
               <img 
                 src="/logo-mgc.png" 
                 alt="MGC Logo" 
@@ -45,9 +45,9 @@ export function Sidebar() {
             
             {/* Titre et nom */}
             <div>
-              <h1 className="text-sm font-bold text-foreground">Courtier Gestion Pro</h1>
+              <h1 className="text-sm font-bold text-white">Courtier Gestion Pro</h1>
               {profile && (
-                <p className="text-xs text-muted-foreground">{profile.nom}</p>
+                <p className="text-xs text-white/50">{profile.nom}</p>
               )}
             </div>
           </div>
@@ -63,8 +63,8 @@ export function Sidebar() {
                 cn(
                   'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                   isActive
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-foreground hover:bg-accent'
+                    ? 'bg-yellow-500 text-black shadow-lg shadow-yellow-500/20'
+                    : 'text-white/70 hover:bg-white/5 hover:text-white'
                 )
               }
             >
@@ -75,10 +75,10 @@ export function Sidebar() {
         </nav>
 
         {/* Logout */}
-        <div className="border-t p-4">
+        <div className="border-t border-white/10 p-4">
           <Button
             variant="ghost"
-            className="w-full justify-start gap-3"
+            className="w-full justify-start gap-3 text-white/70 hover:text-white hover:bg-white/5"
             onClick={signOut}
           >
             <LogOut className="h-5 w-5" />

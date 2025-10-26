@@ -4,7 +4,7 @@ import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: 'courtier' | 'client';
+  requiredRole?: 'courtier' | 'client' | 'any';
 }
 
 export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
@@ -22,8 +22,8 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     return <Navigate to="/auth" replace />;
   }
 
-  // If a specific role is required
-  if (requiredRole && profile.role !== requiredRole) {
+  // If a specific role is required (and it's not 'any')
+  if (requiredRole && requiredRole !== 'any' && profile.role !== requiredRole) {
     // Redirect to appropriate page based on actual role
     const redirectPath = profile.role === 'courtier' ? '/dashboard' : '/espace-client';
     return <Navigate to={redirectPath} replace />;
