@@ -142,9 +142,9 @@ export default function EspaceClient() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-900">
       {/* En-tête */}
-      <header className="bg-white border-b">
+      <header className="bg-gray-800 border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="text-2xl font-bold text-primary">Courtier Pro Flow</div>
@@ -166,13 +166,13 @@ export default function EspaceClient() {
       <main className="max-w-7xl mx-auto px-4 py-8 space-y-6">
         {/* Notification si dossier mis à jour */}
         {dossierData.statut === 'en_analyse' && (
-          <Card className="border-blue-200 bg-blue-50">
+          <Card className="border-blue-600 bg-blue-900/20">
             <CardContent className="pt-6">
               <div className="flex items-start gap-3">
-                <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5" />
+                <AlertCircle className="h-5 w-5 text-blue-400 mt-0.5" />
                 <div>
-                  <h3 className="font-medium text-blue-900">Dossier mis à jour</h3>
-                  <p className="text-sm text-blue-800 mt-1">
+                  <h3 className="font-medium text-blue-200">Dossier mis à jour</h3>
+                  <p className="text-sm text-blue-300 mt-1">
                     Votre dossier est actuellement en cours d'analyse par notre équipe.
                   </p>
                 </div>
@@ -182,9 +182,9 @@ export default function EspaceClient() {
         )}
 
         {/* Informations du dossier */}
-        <Card>
+        <Card className="bg-gray-800 border-gray-700">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-white">
               <FileText className="h-5 w-5" />
               Mon dossier
             </CardTitle>
@@ -192,22 +192,22 @@ export default function EspaceClient() {
           <CardContent className="space-y-4">
             <div className="grid gap-4 md:grid-cols-3">
               <div>
-                <p className="text-sm text-muted-foreground">Type de dossier</p>
-                <p className="font-semibold">{dossierData.type}</p>
+                <p className="text-sm text-gray-300">Type de dossier</p>
+                <p className="font-semibold text-white">{dossierData.type}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Montant</p>
-                <p className="font-semibold">{dossierData.montant.toLocaleString('fr-FR')} €</p>
+                <p className="text-sm text-gray-300">Montant</p>
+                <p className="font-semibold text-white">{dossierData.montant.toLocaleString('fr-FR')} €</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Banque partenaire</p>
-                <p className="font-semibold">{dossierData.banque}</p>
+                <p className="text-sm text-gray-300">Banque partenaire</p>
+                <p className="font-semibold text-white">{dossierData.banque}</p>
               </div>
             </div>
 
             {/* Barre de progression */}
             <div className="mt-6">
-              <p className="text-sm font-medium mb-4">Statut du dossier</p>
+              <p className="text-sm font-medium mb-4 text-white">Statut du dossier</p>
               <div className="flex items-center gap-2">
                 {statusSteps.map((step, index) => {
                   const Icon = step.icon;
@@ -226,7 +226,7 @@ export default function EspaceClient() {
                         }`}>
                           <Icon className="h-5 w-5" />
                         </div>
-                        <span className={`text-xs font-medium ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}>
+                        <span className={`text-xs font-medium ${isActive ? 'text-white' : 'text-gray-400'}`}>
                           {step.label}
                         </span>
                       </div>
@@ -244,10 +244,10 @@ export default function EspaceClient() {
         </Card>
 
         {/* Documents */}
-        <Card>
+        <Card className="bg-gray-800 border-gray-700">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-white">
                 <FileText className="h-5 w-5" />
                 Documents
               </CardTitle>
@@ -284,17 +284,17 @@ export default function EspaceClient() {
           <CardContent>
             <div className="space-y-3">
               {dossierData.documents.map((doc, index) => (
-                <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                <div key={index} className="flex items-center justify-between p-3 border border-gray-600 rounded-lg bg-gray-700">
                   <div className="flex items-center gap-3">
                     {doc.statut === 'reçu' ? (
-                      <CheckCircle className="h-5 w-5 text-green-600" />
+                      <CheckCircle className="h-5 w-5 text-green-400" />
                     ) : (
-                      <AlertCircle className="h-5 w-5 text-orange-600" />
+                      <AlertCircle className="h-5 w-5 text-orange-400" />
                     )}
                     <div>
-                      <p className="font-medium">{doc.nom}</p>
+                      <p className="font-medium text-white">{doc.nom}</p>
                       {doc.date && (
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-gray-300">
                           Reçu le {new Date(doc.date).toLocaleDateString('fr-FR')}
                         </p>
                       )}
@@ -310,10 +310,10 @@ export default function EspaceClient() {
         </Card>
 
         {/* Messagerie */}
-        <Card>
+        <Card className="bg-gray-800 border-gray-700">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-white">
                 <MessageSquare className="h-5 w-5" />
                 Messagerie
               </CardTitle>
@@ -352,16 +352,16 @@ export default function EspaceClient() {
                   className={`flex ${msg.type === 'client' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-[80%] p-4 rounded-lg ${
+                    className={`max-w-[80%] p-4 rounded-lg border ${
                       msg.type === 'client'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted'
+                        ? 'bg-blue-600 text-white border-blue-500'
+                        : 'bg-gray-600 text-white border-gray-500'
                     }`}
                   >
                     <div className="text-sm font-medium mb-1">{msg.auteur}</div>
                     <div className="text-sm">{msg.message}</div>
                     <div className={`text-xs mt-2 ${
-                      msg.type === 'client' ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                      msg.type === 'client' ? 'text-blue-200' : 'text-gray-300'
                     }`}>
                       {new Date(msg.date).toLocaleDateString('fr-FR')}
                     </div>
@@ -373,9 +373,9 @@ export default function EspaceClient() {
         </Card>
 
         {/* Coordonnées du courtier */}
-        <Card>
+        <Card className="bg-gray-800 border-gray-700">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-white">
               <User className="h-5 w-5" />
               Votre courtier référent
             </CardTitle>
@@ -383,18 +383,18 @@ export default function EspaceClient() {
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <User className="h-5 w-5 text-muted-foreground" />
-                <span className="font-medium">{courtier.nom}</span>
+                <User className="h-5 w-5 text-gray-300" />
+                <span className="font-medium text-white">{courtier.nom}</span>
               </div>
               <div className="flex items-center gap-3">
-                <Phone className="h-5 w-5 text-muted-foreground" />
-                <a href={`tel:${courtier.telephone}`} className="text-sm hover:text-primary">
+                <Phone className="h-5 w-5 text-gray-300" />
+                <a href={`tel:${courtier.telephone}`} className="text-sm text-blue-400 hover:text-blue-300">
                   {courtier.telephone}
                 </a>
               </div>
               <div className="flex items-center gap-3">
-                <Mail className="h-5 w-5 text-muted-foreground" />
-                <a href={`mailto:${courtier.email}`} className="text-sm hover:text-primary">
+                <Mail className="h-5 w-5 text-gray-300" />
+                <a href={`mailto:${courtier.email}`} className="text-sm text-blue-400 hover:text-blue-300">
                   {courtier.email}
                 </a>
               </div>
@@ -413,7 +413,7 @@ export default function EspaceClient() {
           <Bot className="h-6 w-6" />
         </Button>
       ) : (
-        <div className="fixed bottom-6 right-6 w-96 shadow-2xl rounded-lg border bg-white z-50 flex flex-col" style={{ height: '500px' }}>
+        <div className="fixed bottom-6 right-6 w-96 shadow-2xl rounded-lg border border-gray-600 bg-gray-800 z-50 flex flex-col" style={{ height: '500px' }}>
           <div className="bg-primary text-primary-foreground p-4 rounded-t-lg flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Bot className="h-5 w-5" />
@@ -429,18 +429,18 @@ export default function EspaceClient() {
             </Button>
           </div>
           
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-700">
             {chatbotMessages.map((msg) => (
               <div
                 key={msg.id}
                 className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[80%] p-3 rounded-lg ${
-                    msg.type === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-white border'
-                  }`}
+                    className={`max-w-[80%] p-3 rounded-lg ${
+                      msg.type === 'user'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-gray-600 border border-gray-500'
+                    }`}
                 >
                   {msg.message}
                 </div>
@@ -448,7 +448,7 @@ export default function EspaceClient() {
             ))}
           </div>
           
-          <form onSubmit={handleChatbotSend} className="p-4 border-t bg-white rounded-b-lg">
+          <form onSubmit={handleChatbotSend} className="p-4 border-t border-gray-600 bg-gray-800 rounded-b-lg">
             <div className="flex gap-2">
               <Input
                 value={userInput}
