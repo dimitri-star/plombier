@@ -8,13 +8,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Trash2, Moon, Sun, Image as ImageIcon } from 'lucide-react';
+import { Plus, Trash2, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useTheme } from '@/hooks/use-theme';
 
 export default function Parametres() {
   const { toast } = useToast();
-  const { theme, toggleTheme } = useTheme();
   
   const [profile, setProfile] = useState({
     nom: 'Jean Dupont',
@@ -74,13 +72,7 @@ export default function Parametres() {
     });
   };
 
-  const handleToggleTheme = () => {
-    toggleTheme();
-    toast({
-      title: 'Thème changé',
-      description: `Thème ${theme === 'dark' ? 'clair' : 'sombre'} activé`,
-    });
-  };
+
 
   return (
     <div className="space-y-6">
@@ -277,34 +269,7 @@ export default function Parametres() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label>Thème</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Choisissez entre le thème clair ou sombre
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Button
-                    variant={theme === 'light' ? 'default' : 'outline'}
-                    onClick={() => {
-                      if (theme === 'dark') handleToggleTheme();
-                    }}
-                  >
-                    <Sun className="mr-2 h-4 w-4" />
-                    Clair
-                  </Button>
-                  <Button
-                    variant={theme === 'dark' ? 'default' : 'outline'}
-                    onClick={() => {
-                      if (theme === 'light') handleToggleTheme();
-                    }}
-                  >
-                    <Moon className="mr-2 h-4 w-4" />
-                    Sombre
-                  </Button>
-                </div>
-              </div>
+              {/* Mode sombre forcé - section thème supprimée */}
             </CardContent>
           </Card>
         </TabsContent>

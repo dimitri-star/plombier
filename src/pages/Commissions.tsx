@@ -1,200 +1,210 @@
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useMemo } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Search, Download, TrendingUp, DollarSign, CheckCircle, Clock } from 'lucide-react';
+import { DollarSign, TrendingUp, Clock, Download, RefreshCw, Sparkles, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+
+interface Facture {
+  id: string;
+  client: string;
+  montant: number;
+  statut: 'Payée' | 'En attente';
+  dateEmission: string;
+  datePaiement?: string;
+}
 
 export default function Commissions() {
   const { toast } = useToast();
 
-  // Données factices
-  const [commissions, setCommissions] = useState([
+  // Données factices de factures
+  const [factures, setFactures] = useState<Facture[]>([
     {
-      id: 1,
-      dossier: 'Prêt immobilier - Marie Dubois',
-      montant: 4500,
-      statut: 'encaissé',
-      date: '2024-01-15',
-      partenaire: 'Crédit Agricole',
+      id: 'F-101',
+      client: 'Mme Colin',
+      montant: 180,
+      statut: 'Payée',
+      dateEmission: '2024-11-06',
+      datePaiement: '2024-11-07',
     },
     {
-      id: 2,
-      dossier: 'Rachat de crédit - Jean Martin',
-      montant: 3200,
-      statut: 'a_venir',
-      date: '2024-02-10',
-      partenaire: 'BNP Paribas',
+      id: 'F-102',
+      client: 'M. Leroy',
+      montant: 690,
+      statut: 'Payée',
+      dateEmission: '2024-11-06',
+      datePaiement: '2024-11-08',
     },
     {
-      id: 3,
-      dossier: 'Prêt auto - Sophie Bernard',
-      montant: 850,
-      statut: 'encaissé',
-      date: '2024-01-08',
-      partenaire: 'Société Générale',
+      id: 'F-100',
+      client: 'M. Giraud',
+      montant: 180,
+      statut: 'Payée',
+      dateEmission: '2024-10-02',
+      datePaiement: '2024-10-05',
     },
     {
-      id: 4,
-      dossier: 'Prêt personnel - Pierre Durand',
-      montant: 1500,
-      statut: 'a_venir',
-      date: '2024-03-05',
-      partenaire: 'Crédit Mutuel',
+      id: 'F-103',
+      client: 'M. Dubois',
+      montant: 250,
+      statut: 'En attente',
+      dateEmission: '2024-11-07',
     },
     {
-      id: 5,
-      dossier: 'Prêt immobilier - Anne Martin',
-      montant: 5200,
-      statut: 'encaissé',
-      date: '2024-01-20',
-      partenaire: 'Crédit Agricole',
+      id: 'F-104',
+      client: 'M. Martin',
+      montant: 450,
+      statut: 'En attente',
+      dateEmission: '2024-11-05',
     },
   ]);
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatut, setFilterStatut] = useState('Tous');
-  const [filterPartenaire, setFilterPartenaire] = useState('Tous');
-  const [openDialog, setOpenDialog] = useState(false);
+  // Données pour les calculs mensuels
+  const moisActuel = new Date().getMonth();
+  const anneeActuel = new Date().getFullYear();
+  
+  const facturesMoisActuel = useMemo(() => {
+    return factures.filter(f => {
+      const date = new Date(f.dateEmission);
+      return date.getMonth() === moisActuel && date.getFullYear() === anneeActuel;
+    });
+  }, [factures, moisActuel, anneeActuel]);
 
-  const filteredCommissions = commissions.filter((commission) => {
-    const matchesSearch = commission.dossier.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatut = filterStatut === 'Tous' || commission.statut === filterStatut;
-    const matchesPartenaire = filterPartenaire === 'Tous' || commission.partenaire === filterPartenaire;
-    return matchesSearch && matchesStatut && matchesPartenaire;
-  });
+  const facturesMoisPrecedent = useMemo(() => {
+    const moisPrec = moisActuel === 0 ? 11 : moisActuel - 1;
+    const anneePrec = moisActuel === 0 ? anneeActuel - 1 : anneeActuel;
+    return factures.filter(f => {
+      const date = new Date(f.dateEmission);
+      return date.getMonth() === moisPrec && date.getFullYear() === anneePrec;
+    });
+  }, [factures, moisActuel, anneeActuel]);
 
-  const totalCommissions = commissions.reduce((acc, c) => acc + c.montant, 0);
-  const encaisses = commissions.filter(c => c.statut === 'encaissé').reduce((acc, c) => acc + c.montant, 0);
-  const aVenir = commissions.filter(c => c.statut === 'a_venir').reduce((acc, c) => acc + c.montant, 0);
+  // Calculs du résumé mensuel
+  const chiffreAffaires = facturesMoisActuel
+    .filter(f => f.statut === 'Payée')
+    .reduce((acc, f) => acc + f.montant, 0);
 
-  // Données pour le graphique
-  const monthlyData = [
-    { mois: 'Oct 2023', montant: 8500 },
-    { mois: 'Nov 2023', montant: 10200 },
-    { mois: 'Déc 2023', montant: 12350 },
-    { mois: 'Jan 2024', montant: 15250 },
-    { mois: 'Fév 2024', montant: 3200 },
+  const montantEnAttente = facturesMoisActuel
+    .filter(f => f.statut === 'En attente')
+    .reduce((acc, f) => acc + f.montant, 0);
+
+  // Simulation : nombre de devis et factures pour le taux de conversion
+  const nombreDevis = 12; // Devis créés ce mois
+  const nombreFactures = facturesMoisActuel.length; // Factures émises
+  const tauxConversion = nombreDevis > 0 ? Math.round((nombreFactures / nombreDevis) * 100) : 0;
+
+  // Calcul évolution CA
+  const CAMoisPrecedent = facturesMoisPrecedent
+    .filter(f => f.statut === 'Payée')
+    .reduce((acc, f) => acc + f.montant, 0);
+
+  const evolutionCA = CAMoisPrecedent > 0 
+    ? Math.round(((chiffreAffaires - CAMoisPrecedent) / CAMoisPrecedent) * 100)
+    : 0;
+
+  // Données pour le graphique d'évolution du CA (6 derniers mois)
+  const evolutionCAData = [
+    { mois: 'Juin', CA: 2800 },
+    { mois: 'Juil', CA: 3100 },
+    { mois: 'Août', CA: 2950 },
+    { mois: 'Sept', CA: 3200 },
+    { mois: 'Oct', CA: CAMoisPrecedent || 3240 },
+    { mois: 'Nov', CA: chiffreAffaires },
   ];
 
-  const handleAddCommission = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    toast({
-      title: 'Succès',
-      description: 'Commission ajoutée avec succès',
-    });
-    setOpenDialog(false);
+  // Générer rapport IA
+  const genererRapportIA = (): string => {
+    const signe = evolutionCA >= 0 ? 'augmenté' : 'diminué';
+    const valeur = Math.abs(evolutionCA);
+    const nomMoisPrec = new Date(anneeActuel, moisActuel - 1, 1).toLocaleDateString('fr-FR', { month: 'long' });
+    
+    return `Ce mois-ci, vos revenus ont ${signe} de ${valeur}% par rapport à ${nomMoisPrec}. ${montantEnAttente > 0 ? `${montantEnAttente}€ sont encore en attente de paiement.` : 'Tous les paiements ont été reçus.'}`;
   };
 
-  const handleExport = (format: 'csv' | 'pdf') => {
+  const handleRelancerPaiements = () => {
+    const facturesEnAttente = factures.filter(f => f.statut === 'En attente');
+    if (facturesEnAttente.length === 0) {
+      toast({
+        title: 'Aucun paiement à relancer',
+        description: 'Tous les paiements ont été reçus.',
+      });
+      return;
+    }
+
     toast({
-      title: 'Export réussi',
-      description: `Export ${format.toUpperCase()} en cours...`,
+      title: `${facturesEnAttente.length} relance(s) envoyée(s)`,
+      description: `Les clients avec des factures en attente ont été relancés automatiquement.`,
     });
+  };
+
+  const handleExportPDF = () => {
+    toast({
+      title: 'Export PDF en cours',
+      description: 'Le rapport comptable PDF est en cours de génération...',
+    });
+    
+    // Simulation d'export
+    setTimeout(() => {
+      toast({
+        title: 'PDF exporté',
+        description: 'Le rapport comptable PDF a été généré avec succès.',
+      });
+    }, 1500);
+  };
+
+  const getStatutBadge = (statut: Facture['statut']) => {
+    switch (statut) {
+      case 'Payée':
+        return <Badge className="bg-green-500/20 text-green-400 border-green-500/30">✅ Payée</Badge>;
+      case 'En attente':
+        return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">⏳ En attente</Badge>;
+      default:
+        return <Badge>{statut}</Badge>;
+    }
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Commissions</h1>
+          <h1 className="text-3xl font-bold">Finances & Paiements</h1>
           <p className="mt-2 text-muted-foreground">
-            Suivez vos revenus et prévisions
+            Visualisez vos revenus, les paiements reçus et les relances financières
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => handleExport('csv')}>
-            <Download className="mr-2 h-4 w-4" />
-            CSV
+          <Button variant="outline" onClick={handleRelancerPaiements}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Relancer les paiements en attente
           </Button>
-          <Button variant="outline" onClick={() => handleExport('pdf')}>
+          <Button className="bg-yellow-500 hover:bg-yellow-600 text-black" onClick={handleExportPDF}>
             <Download className="mr-2 h-4 w-4" />
-            PDF
+            Exporter rapport comptable PDF
           </Button>
-          <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Ajouter une commission
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Nouvelle commission</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleAddCommission} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="dossier">Dossier</Label>
-                  <Select name="dossier" required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner un dossier" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">Prêt immobilier - Marie Dubois</SelectItem>
-                      <SelectItem value="2">Rachat de crédit - Jean Martin</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="montant">Montant (€)</Label>
-                  <Input id="montant" name="montant" type="number" required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="statut">Statut</Label>
-                  <Select name="statut" required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner un statut" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="encaissé">Encaissé</SelectItem>
-                      <SelectItem value="a_venir">À venir</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="date">Date</Label>
-                  <Input id="date" name="date" type="date" required />
-                </div>
-                <div className="flex gap-2">
-                  <Button type="submit" className="flex-1">Ajouter</Button>
-                  <Button type="button" variant="outline" onClick={() => setOpenDialog(false)}>
-                    Annuler
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
         </div>
       </div>
 
-      {/* Stats */}
+      {/* Résumé mensuel */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-2">
               <DollarSign className="h-8 w-8 text-green-600" />
               <div>
-                <div className="text-2xl font-bold">{totalCommissions.toLocaleString('fr-FR')} €</div>
-                <p className="text-xs text-muted-foreground">Total commissions</p>
+                <div className="text-2xl font-bold">{chiffreAffaires.toLocaleString('fr-FR')} €</div>
+                <p className="text-xs text-muted-foreground">Chiffre d'affaires</p>
               </div>
             </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-8 w-8 text-blue-600" />
-              <div>
-                <div className="text-2xl font-bold">{encaisses.toLocaleString('fr-FR')} €</div>
-                <p className="text-xs text-muted-foreground">Encaissées</p>
+            {evolutionCA !== 0 && (
+              <div className="mt-2 flex items-center gap-1 text-xs">
+                <TrendingUp className={`h-3 w-3 ${evolutionCA >= 0 ? 'text-green-400' : 'text-red-400'}`} />
+                <span className={evolutionCA >= 0 ? 'text-green-400' : 'text-red-400'}>
+                  {evolutionCA >= 0 ? '+' : ''}{evolutionCA}% vs mois précédent
+                </span>
               </div>
-            </div>
+            )}
           </CardContent>
         </Card>
         <Card>
@@ -202,122 +212,142 @@ export default function Commissions() {
             <div className="flex items-center gap-2">
               <Clock className="h-8 w-8 text-orange-600" />
               <div>
-                <div className="text-2xl font-bold">{aVenir.toLocaleString('fr-FR')} €</div>
-                <p className="text-xs text-muted-foreground">À venir</p>
+                <div className="text-2xl font-bold">{montantEnAttente.toLocaleString('fr-FR')} €</div>
+                <p className="text-xs text-muted-foreground">Montant en attente</p>
               </div>
             </div>
+            {montantEnAttente > 0 && (
+              <p className="mt-2 text-xs text-orange-400">
+                {factures.filter(f => f.statut === 'En attente').length} facture(s) en attente
+              </p>
+            )}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-8 w-8 text-blue-600" />
+              <div>
+                <div className="text-2xl font-bold">{tauxConversion}%</div>
+                <p className="text-xs text-muted-foreground">Taux de conversion devis / factures</p>
+              </div>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              {nombreFactures} factures / {nombreDevis} devis
+            </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Graphique */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Évolution des commissions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={monthlyData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="mois" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="montant" fill="#8884d8" />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-
-      {/* Filtres */}
-      <Card>
+      {/* Rapport IA */}
+      <Card className="bg-blue-500/10 border-blue-500/30">
         <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex items-start gap-3">
+            <Sparkles className="h-5 w-5 text-blue-400 mt-0.5" />
             <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Rechercher..."
-                  className="pl-10"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
+              <h3 className="font-semibold text-blue-400 mb-2">Rapport IA</h3>
+              <p className="text-sm text-muted-foreground">
+                {genererRapportIA()}
+              </p>
             </div>
-            <Select value={filterStatut} onValueChange={setFilterStatut}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Statut" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Tous">Tous les statuts</SelectItem>
-                <SelectItem value="encaissé">Encaissé</SelectItem>
-                <SelectItem value="a_venir">À venir</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={filterPartenaire} onValueChange={setFilterPartenaire}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Partenaire" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Tous">Tous les partenaires</SelectItem>
-                <SelectItem value="Crédit Agricole">Crédit Agricole</SelectItem>
-                <SelectItem value="BNP Paribas">BNP Paribas</SelectItem>
-                <SelectItem value="Société Générale">Société Générale</SelectItem>
-                <SelectItem value="Crédit Mutuel">Crédit Mutuel</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
         </CardContent>
       </Card>
 
-      {/* Tableau */}
+      {/* Graphique d'évolution du CA */}
       <Card>
         <CardHeader>
-          <CardTitle>Liste des commissions ({filteredCommissions.length})</CardTitle>
+          <CardTitle>Évolution du chiffre d'affaires</CardTitle>
+          <CardDescription>
+            Évolution mensuelle de vos revenus sur les 6 derniers mois
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Dossier</TableHead>
-                <TableHead>Partenaire</TableHead>
-                <TableHead>Montant</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead>Date</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredCommissions.map((commission) => (
-                <TableRow key={commission.id}>
-                  <TableCell className="font-medium">{commission.dossier}</TableCell>
-                  <TableCell>{commission.partenaire}</TableCell>
-                  <TableCell className="font-semibold">{commission.montant.toLocaleString('fr-FR')} €</TableCell>
-                  <TableCell>
-                    <Badge variant={commission.statut === 'encaissé' ? 'default' : 'secondary'}>
-                      {commission.statut === 'encaissé' ? (
-                        <>
-                          <CheckCircle className="w-3 h-3 mr-1" />
-                          Encaissé
-                        </>
-                      ) : (
-                        <>
-                          <Clock className="w-3 h-3 mr-1" />
-                          À venir
-                        </>
-                      )}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{new Date(commission.date).toLocaleDateString('fr-FR')}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          {filteredCommissions.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              Aucune commission trouvée
-            </div>
-          )}
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={evolutionCAData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="mois" />
+              <YAxis />
+              <Tooltip formatter={(value) => `${value} €`} />
+              <Legend />
+              <Line 
+                type="monotone" 
+                dataKey="CA" 
+                stroke="#fbbf24" 
+                strokeWidth={2}
+                name="Chiffre d'affaires (€)"
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </CardContent>
       </Card>
+
+      {/* Liste des factures */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Liste des factures ({factures.length})</CardTitle>
+          <CardDescription>
+            Toutes vos factures avec leur statut de paiement
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>N° Facture</TableHead>
+                  <TableHead>Client</TableHead>
+                  <TableHead>Montant</TableHead>
+                  <TableHead>Statut</TableHead>
+                  <TableHead>Date émission</TableHead>
+                  <TableHead>Date paiement</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {factures.map((facture) => (
+                  <TableRow key={facture.id}>
+                    <TableCell className="font-medium">{facture.id}</TableCell>
+                    <TableCell>{facture.client}</TableCell>
+                    <TableCell className="font-semibold">{facture.montant.toLocaleString('fr-FR')} €</TableCell>
+                    <TableCell>{getStatutBadge(facture.statut)}</TableCell>
+                    <TableCell>{new Date(facture.dateEmission).toLocaleDateString('fr-FR')}</TableCell>
+                    <TableCell>
+                      {facture.datePaiement 
+                        ? new Date(facture.datePaiement).toLocaleDateString('fr-FR')
+                        : <span className="text-muted-foreground">-</span>
+                      }
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            {factures.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                Aucune facture
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Alerte paiements en attente */}
+      {montantEnAttente > 0 && (
+        <Card className="bg-orange-500/10 border-orange-500/30">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-orange-400 mt-0.5" />
+              <div>
+                <h3 className="font-semibold text-orange-400 mb-1">Paiements en attente</h3>
+                <p className="text-sm text-muted-foreground">
+                  Vous avez {montantEnAttente.toLocaleString('fr-FR')}€ en attente de paiement. 
+                  Utilisez le bouton "Relancer les paiements en attente" pour envoyer des rappels automatiques aux clients.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
+

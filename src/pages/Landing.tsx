@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
-import { Circle, ArrowRight } from "lucide-react";
+import { Circle, ArrowRight, Wrench } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -75,9 +75,9 @@ function ElegantShape({
 }
 
 function HeroGeometric({
-    badge = "MGC Courtier",
-    title1 = "Courtier Gestion Pro",
-    title2 = "Gérez vos dossiers efficacement",
+    badge = "Plombier IA Pro",
+    title1 = "Plombier IA Pro",
+    title2 = "Automatisez vos devis, relances et interventions — gagnez jusqu'à 2h par jour.",
 }: {
     badge?: string;
     title1?: string;
@@ -157,12 +157,8 @@ function HeroGeometric({
                         animate="visible"
                         className="flex justify-center mb-8"
                     >
-                        <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-white/[0.05] border border-white/[0.08]">
-                            <img 
-                                src="/logo-mgc.png" 
-                                alt="MGC Logo" 
-                                className="h-10 w-10 object-contain"
-                            />
+                        <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/30 border border-blue-400/30 shadow-lg shadow-blue-500/20">
+                            <Wrench className="h-10 w-10 text-blue-400" strokeWidth={2.5} />
                         </div>
                     </motion.div>
 
@@ -206,9 +202,9 @@ function HeroGeometric({
                         initial="hidden"
                         animate="visible"
                     >
-                        <p className="text-xs sm:text-sm md:text-base text-white/40 mb-8 leading-relaxed font-light tracking-wide max-w-xl mx-auto px-4">
-                            Solution complète de gestion pour courtiers en assurances.
-                            Gérez vos prospects, dossiers clients et commissions en toute simplicité.
+                        <p className="text-xs sm:text-sm md:text-base text-white/40 mb-8 leading-relaxed font-light tracking-wide max-w-2xl mx-auto px-4">
+                            Solution complète de gestion intelligente pour plombiers indépendants et entreprises du bâtiment.
+                            Créez vos devis, planifiez vos chantiers, relancez vos clients et suivez vos paiements, le tout automatiquement grâce à l'IA.
                         </p>
                     </motion.div>
 
@@ -220,7 +216,7 @@ function HeroGeometric({
                         animate="visible"
                         className="flex flex-col sm:flex-row gap-4 justify-center items-center"
                     >
-                        <Link to="/auth">
+                        <Link to="/auth?signup=true">
                             <Button 
                                 size="lg" 
                                 className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold px-8 py-6 text-lg group"
@@ -232,8 +228,7 @@ function HeroGeometric({
                         <Link to="/auth">
                             <Button 
                                 size="lg" 
-                                variant="outline"
-                                className="border-white/20 hover:bg-white/[0.05] text-white font-semibold px-8 py-6 text-lg"
+                                className="bg-black hover:bg-black/80 text-white font-semibold px-8 py-6 text-lg border border-white/20"
                             >
                                 Se connecter
                             </Button>

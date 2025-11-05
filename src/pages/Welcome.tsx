@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { StarBorder } from "@/components/ui/star-border";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
 import { ArrowRight } from "lucide-react";
@@ -95,8 +94,9 @@ export default function Welcome() {
         }),
     };
 
-    const userName = profile?.nom || 'Mathieu Gineste';
-    const redirectPath = profile?.role === 'courtier' ? '/dashboard' : '/espace-client';
+    // Extraire la partie avant @ de l'email pour le nom d'utilisateur
+    const userName = user?.email?.split('@')[0] || profile?.nom || 'plombier';
+    const redirectPath = '/dashboard';
 
     return (
         <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-[#030303]">
@@ -151,23 +151,6 @@ export default function Welcome() {
 
             <div className="relative z-10 container mx-auto px-4 md:px-6">
                 <div className="max-w-3xl mx-auto text-center">
-                    {/* Logo MGC */}
-                    <motion.div
-                        custom={0}
-                        variants={fadeUpVariants}
-                        initial="hidden"
-                        animate="visible"
-                        className="flex justify-center mb-8"
-                    >
-                        <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-white/[0.05] border border-white/[0.08]">
-                            <img 
-                                src="/logo-mgc.png" 
-                                alt="MGC Logo" 
-                                className="h-10 w-10 object-contain"
-                            />
-                        </div>
-                    </motion.div>
-
                     <motion.div
                         custom={1}
                         variants={fadeUpVariants}
@@ -176,7 +159,7 @@ export default function Welcome() {
                     >
                         <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight mb-6">
                             <span className="bg-clip-text text-transparent bg-gradient-to-b from-white to-white/80">
-                                Bienvenue {userName}
+                                Bienvenue {userName} 👋
                             </span>
                         </h1>
                     </motion.div>
@@ -187,8 +170,11 @@ export default function Welcome() {
                         initial="hidden"
                         animate="visible"
                     >
+                        <p className="text-base sm:text-lg md:text-xl text-white/60 mb-6 leading-relaxed font-light tracking-wide max-w-xl mx-auto px-4">
+                            Votre compte a été créé avec succès.
+                        </p>
                         <p className="text-base sm:text-lg md:text-xl text-white/60 mb-10 leading-relaxed font-light tracking-wide max-w-xl mx-auto px-4">
-                            Votre compte a été créé avec succès. Vous pouvez maintenant accéder à votre espace de gestion.
+                            Vous pouvez maintenant accéder à votre assistant IA et automatiser votre journée de travail.
                         </p>
                     </motion.div>
 
@@ -199,18 +185,11 @@ export default function Welcome() {
                         initial="hidden"
                         animate="visible"
                     >
-                        <Link to={redirectPath} className="inline-block">
-                            <StarBorder 
-                                as="div"
-                                color="#FDB913"
-                                speed="8s"
-                                className=""
-                            >
-                                <span className="flex items-center gap-2 text-white font-semibold text-lg bg-black rounded-[20px] py-4 px-6 border border-yellow-500/30">
-                                    Accéder au dashboard
-                                    <ArrowRight className="h-5 w-5" />
-                                </span>
-                            </StarBorder>
+                        <Link to={redirectPath}>
+                            <button className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold px-8 py-6 text-lg rounded-lg group transition-all flex items-center gap-2 mx-auto">
+                                Accéder au dashboard
+                                <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                            </button>
                         </Link>
                     </motion.div>
                 </div>

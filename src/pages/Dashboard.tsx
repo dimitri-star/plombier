@@ -1,339 +1,246 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { 
-  Users, 
-  FolderOpen, 
-  DollarSign, 
-  TrendingUp, 
-  ArrowRight, 
   FileText, 
-  CheckCircle,
+  CheckCircle, 
+  Calendar,
+  DollarSign, 
   Clock
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 export default function Dashboard() {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
+  
+  // Nom d'utilisateur (partie avant @ de l'email ou nom du profil)
+  const userName = user?.email?.split('@')[0] || profile?.nom || 'Martin';
 
-  // Données factices
+  // Données factices pour les indicateurs
   const statsData = {
-    totalProspects: 42,
-    dossiersEnCours: 28,
-    commissionsEncaissees: 15600,
-    commissionsAVenir: 8400,
-    tauxConversion: 68,
+    devisCreésSemaine: 12,
+    devisAcceptés: 8,
+    tauxConversion: 67,
+    interventionsPlanifiées: 6,
+    interventionsDemain: 3,
+    paiementsEncaissés: 3240,
+    tempsGagnéIA: '5h45',
   };
 
-  // Graphique mensuel leads
-  const leadsData = [
-    { mois: 'Jan', leads: 12, conversion: 8 },
-    { mois: 'Fév', leads: 15, conversion: 10 },
-    { mois: 'Mar', leads: 18, conversion: 12 },
-    { mois: 'Avr', leads: 22, conversion: 15 },
-    { mois: 'Mai', leads: 25, conversion: 17 },
-    { mois: 'Juin', leads: 32, conversion: 22 },
+  // Données pour le graphique d'évolution mensuelle (devis / interventions / paiements)
+  const evolutionData = [
+    { mois: 'Jan', devis: 45, interventions: 32, paiements: 2800 },
+    { mois: 'Fév', devis: 52, interventions: 38, paiements: 3100 },
+    { mois: 'Mar', devis: 48, interventions: 35, paiements: 2950 },
+    { mois: 'Avr', devis: 61, interventions: 42, paiements: 3500 },
+    { mois: 'Mai', devis: 55, interventions: 40, paiements: 3200 },
+    { mois: 'Juin', devis: 68, interventions: 48, paiements: 3800 },
   ];
 
-  // Répartition des dossiers
-  const dossiersData = [
-    { name: 'Acceptés', value: 15, color: '#22c55e' },
-    { name: 'En cours', value: 28, color: '#3b82f6' },
-    { name: 'En attente', value: 12, color: '#f59e0b' },
-    { name: 'Refusés', value: 5, color: '#ef4444' },
+  // Données pour le camembert de répartition des interventions
+  const interventionsData = [
+    { name: 'Urgence', value: 25, color: '#ef4444' },
+    { name: 'Entretien', value: 45, color: '#3b82f6' },
+    { name: 'Installation', value: 30, color: '#22c55e' },
   ];
 
-  // Liste des derniers dossiers
-  const derniersDossiers = [
-    { 
-      id: 1, 
-      titre: 'Prêt immobilier - Marie Dubois', 
-      statut: 'accepte', 
-      date: 'Il y a 2h',
-      montant: '320000€'
-    },
-    { 
-      id: 2, 
-      titre: 'Rachat de crédit - Jean Martin', 
-      statut: 'en_analyse', 
-      date: 'Il y a 5h',
-      montant: '150000€'
-    },
-    { 
-      id: 3, 
-      titre: 'Financement véhicule - Sophie Bernard', 
-      statut: 'documents_recus', 
-      date: 'Hier',
-      montant: '25000€'
-    },
-    { 
-      id: 4, 
-      titre: 'Prêt personnel - Marc Laurent', 
-      statut: 'en_attente', 
-      date: 'Il y a 2 jours',
-      montant: '15000€'
-    },
-  ];
-
-  const getStatusBadge = (statut: string) => {
-    switch (statut) {
-      case 'accepte':
-        return <Badge className="bg-green-100 text-green-800"><CheckCircle className="w-3 h-3 mr-1" />Accepté</Badge>;
-      case 'en_analyse':
-        return <Badge className="bg-blue-100 text-blue-800"><Clock className="w-3 h-3 mr-1" />En analyse</Badge>;
-      case 'documents_recus':
-        return <Badge className="bg-orange-100 text-orange-800"><FileText className="w-3 h-3 mr-1" />Documents reçus</Badge>;
-      case 'en_attente':
-        return <Badge className="bg-gray-100 text-gray-800"><Clock className="w-3 h-3 mr-1" />En attente</Badge>;
-      default:
-        return <Badge>{statut}</Badge>;
-    }
-  };
+  const COLORS = interventionsData.map(item => item.color);
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold">Tableau de bord</h1>
-        <p className="mt-2 text-muted-foreground">
-          Bienvenue, {profile?.nom} ! Voici un aperçu de votre activité.
+      {/* En-tête amélioré */}
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold text-white mb-2">Bienvenue, {userName} 👋</h1>
+        <p className="text-gray-400 text-lg">
+          Voici un aperçu de votre activité plomberie
         </p>
       </div>
 
-      {/* Cartes de résumé */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {/* Total de prospects */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total de prospects
-            </CardTitle>
-            <Users className="h-8 w-8 text-blue-600" />
+      {/* Indicateurs clés - Alignement et dimensions optimisés */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 xl:gap-6">
+        {/* Devis créés cette semaine */}
+        <Card className="hover:scale-[1.02] transition-transform duration-300 flex flex-col h-full">
+          <CardHeader className="pb-3 flex-shrink-0">
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <CardTitle className="text-[11px] font-medium text-gray-400 uppercase tracking-wide leading-tight flex-1">
+                Devis créés cette semaine
+              </CardTitle>
+              <div className="p-2 rounded-lg bg-blue-500/20 border border-blue-500/30 flex-shrink-0 mt-0.5">
+                <FileText className="h-4 w-4 text-blue-400" />
+              </div>
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{statsData.totalProspects}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              +12% ce mois
+          <CardContent className="flex-1 flex flex-col justify-end pt-0">
+            <div className="text-3xl xl:text-4xl font-bold text-white mb-1.5">{statsData.devisCreésSemaine}</div>
+            <p className="text-[11px] text-green-400 font-medium leading-tight">
+              +20% vs semaine dernière ↗
             </p>
           </CardContent>
         </Card>
 
-        {/* Dossiers en cours */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Dossiers en cours
-            </CardTitle>
-            <FolderOpen className="h-8 w-8 text-orange-600" />
+        {/* Devis acceptés */}
+        <Card className="hover:scale-[1.02] transition-transform duration-300 flex flex-col h-full">
+          <CardHeader className="pb-3 flex-shrink-0">
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <CardTitle className="text-[11px] font-medium text-gray-400 uppercase tracking-wide leading-tight flex-1">
+                Devis acceptés
+              </CardTitle>
+              <div className="p-2 rounded-lg bg-green-500/20 border border-green-500/30 flex-shrink-0 mt-0.5">
+                <CheckCircle className="h-4 w-4 text-green-400" />
+              </div>
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{statsData.dossiersEnCours}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              5 en attente de documents
+          <CardContent className="flex-1 flex flex-col justify-end pt-0">
+            <div className="text-3xl xl:text-4xl font-bold text-white mb-1.5">{statsData.devisAcceptés}</div>
+            <p className="text-[11px] text-gray-400 leading-tight">
+              Taux de conversion : <span className="text-green-400 font-semibold">{statsData.tauxConversion}%</span>
             </p>
           </CardContent>
         </Card>
 
-        {/* Commissions encaissées */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Commissions encaissées
-            </CardTitle>
-            <DollarSign className="h-8 w-8 text-green-600" />
+        {/* Interventions planifiées */}
+        <Card className="hover:scale-[1.02] transition-transform duration-300 flex flex-col h-full">
+          <CardHeader className="pb-3 flex-shrink-0">
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <CardTitle className="text-[11px] font-medium text-gray-400 uppercase tracking-wide leading-tight flex-1">
+                Interventions planifiées
+              </CardTitle>
+              <div className="p-2 rounded-lg bg-orange-500/20 border border-orange-500/30 flex-shrink-0 mt-0.5">
+                <Calendar className="h-4 w-4 text-orange-400" />
+              </div>
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{statsData.commissionsEncaissees.toLocaleString('fr-FR')} €</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Ce mois
+          <CardContent className="flex-1 flex flex-col justify-end pt-0">
+            <div className="text-3xl xl:text-4xl font-bold text-white mb-1.5">{statsData.interventionsPlanifiées}</div>
+            <p className="text-[11px] text-gray-400 leading-tight">
+              dont <span className="text-orange-400 font-semibold">{statsData.interventionsDemain}</span> demain
             </p>
           </CardContent>
         </Card>
 
-        {/* Taux de conversion */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Taux de conversion
-            </CardTitle>
-            <TrendingUp className="h-8 w-8 text-purple-600" />
+        {/* Paiements encaissés */}
+        <Card className="hover:scale-[1.02] transition-transform duration-300 flex flex-col h-full">
+          <CardHeader className="pb-3 flex-shrink-0">
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <CardTitle className="text-[11px] font-medium text-gray-400 uppercase tracking-wide leading-tight flex-1">
+                Paiements encaissés
+              </CardTitle>
+              <div className="p-2 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex-shrink-0 mt-0.5">
+                <DollarSign className="h-4 w-4 text-emerald-400" />
+              </div>
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{statsData.tauxConversion}%</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              +5% vs. mois dernier
+          <CardContent className="flex-1 flex flex-col justify-end pt-0">
+            <div className="text-3xl xl:text-4xl font-bold text-white mb-1.5">{statsData.paiementsEncaissés.toLocaleString('fr-FR')} €</div>
+            <p className="text-[11px] text-gray-400 leading-tight">
+              ce mois
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Temps gagné grâce à l'IA */}
+        <Card className="hover:scale-[1.02] transition-transform duration-300 flex flex-col h-full">
+          <CardHeader className="pb-3 flex-shrink-0">
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <CardTitle className="text-[11px] font-medium text-gray-400 uppercase tracking-wide leading-tight flex-1">
+                Temps gagné grâce à l'IA
+              </CardTitle>
+              <div className="p-2 rounded-lg bg-purple-500/20 border border-purple-500/30 flex-shrink-0 mt-0.5">
+                <Clock className="h-4 w-4 text-purple-400" />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="flex-1 flex flex-col justify-end pt-0">
+            <div className="text-3xl xl:text-4xl font-bold text-white mb-1.5">{statsData.tempsGagnéIA}</div>
+            <p className="text-[11px] text-gray-400 leading-tight">
+              automatisations actives
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Graphiques */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Graphique leads et conversions mensuels */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Leads et conversions mensuels</CardTitle>
+      {/* Graphiques - Alignement corrigé */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Graphique d'évolution mensuelle */}
+        <Card className="hover:scale-[1.01] transition-transform duration-300">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-white mb-1">Évolution mensuelle</CardTitle>
+            <p className="text-sm text-gray-400">Devis, interventions et paiements sur 6 mois</p>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={leadsData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="mois" />
-                <YAxis />
-                <Tooltip />
+              <LineChart data={evolutionData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.1)" />
+                <XAxis dataKey="mois" stroke="rgba(148, 163, 184, 0.5)" />
+                <YAxis stroke="rgba(148, 163, 184, 0.5)" />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'rgba(30, 41, 59, 0.95)', 
+                    border: '1px solid rgba(59, 130, 246, 0.3)',
+                    borderRadius: '8px'
+                  }} 
+                />
                 <Legend />
                 <Line 
                   type="monotone" 
-                  dataKey="leads" 
+                  dataKey="devis" 
                   stroke="#3b82f6" 
                   strokeWidth={2}
-                  name="Leads"
+                  name="Devis"
                 />
                 <Line 
                   type="monotone" 
-                  dataKey="conversion" 
+                  dataKey="interventions" 
                   stroke="#22c55e" 
                   strokeWidth={2}
-                  name="Conversions"
+                  name="Interventions"
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="paiements" 
+                  stroke="#f59e0b" 
+                  strokeWidth={2}
+                  name="Paiements (€)"
                 />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        {/* Graphique répartition dossiers */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Répartition des dossiers</CardTitle>
+        {/* Graphique répartition des interventions */}
+        <Card className="hover:scale-[1.01] transition-transform duration-300">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-white mb-1">Répartition des interventions</CardTitle>
+            <p className="text-sm text-gray-400">Par type d'intervention</p>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
-                  data={dossiersData}
+                  data={interventionsData}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, value }) => `${name}: ${value}`}
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {dossiersData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  {interventionsData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'rgba(30, 41, 59, 0.95)', 
+                    border: '1px solid rgba(59, 130, 246, 0.3)',
+                    borderRadius: '8px'
+                  }} 
+                />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
-      </div>
-
-      {/* Commissions encaissées / à venir */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Commissions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Commissions encaissées</h3>
-                <DollarSign className="h-5 w-5 text-green-600" />
               </div>
-              <div className="text-3xl font-bold text-green-600">
-                {statsData.commissionsEncaissees.toLocaleString('fr-FR')} €
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Ce mois-ci
-              </p>
-            </div>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Commissions à venir</h3>
-                <TrendingUp className="h-5 w-5 text-orange-600" />
-              </div>
-              <div className="text-3xl font-bold text-orange-600">
-                {statsData.commissionsAVenir.toLocaleString('fr-FR')} €
-              </div>
-              <p className="text-sm text-muted-foreground">
-                En attente de validation
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Liste des derniers dossiers */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Derniers dossiers mis à jour</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {derniersDossiers.map((dossier) => (
-              <div key={dossier.id} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
-                <div className="flex-1">
-                  <h3 className="font-semibold">{dossier.titre}</h3>
-                  <div className="flex items-center gap-4 mt-2">
-                    <p className="text-sm text-muted-foreground">{dossier.montant}</p>
-                    <span className="text-muted-foreground">•</span>
-                    <p className="text-sm text-muted-foreground">{dossier.date}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  {getStatusBadge(dossier.statut)}
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Raccourcis vers les sections principales */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Link to="/prospects">
-          <Card className="cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-l-blue-500">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold">Prospects</h3>
-                  <p className="text-sm text-muted-foreground mt-1">Gérer vos prospects</p>
-                </div>
-                <ArrowRight className="h-5 w-5 text-blue-600" />
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-        <Link to="/dossiers">
-          <Card className="cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-l-orange-500">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold">Dossiers</h3>
-                  <p className="text-sm text-muted-foreground mt-1">Voir tous les dossiers</p>
-                </div>
-                <ArrowRight className="h-5 w-5 text-orange-600" />
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-        <Link to="/commissions">
-          <Card className="cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-l-green-500">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold">Commissions</h3>
-                  <p className="text-sm text-muted-foreground mt-1">Suivre les revenus</p>
-                </div>
-                <ArrowRight className="h-5 w-5 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-      </div>
     </div>
   );
 }

@@ -1,235 +1,639 @@
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Download, TrendingUp, Users, DollarSign, Clock, Award } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Plus, Search, Download, MapPin, Calendar, User, Sparkles, Clock, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+
+interface Photo {
+  id: string;
+  url: string;
+  type: 'avant' | 'apres';
+  nom: string;
+}
+
+interface Chantier {
+  id: string;
+  client: string;
+  adresse: string;
+  date: string;
+  type: string;
+  statut: 'En cours' | 'Terminé';
+  photos: Photo[];
+  note?: string;
+  resumeIA?: string;
+  dureeIntervention?: string;
+}
 
 export default function Analyses() {
   const { toast } = useToast();
 
-  // Données pour les graphiques
-  const leadsData = [
-    { mois: 'Oct 2023', leads: 45 },
-    { mois: 'Nov 2023', leads: 52 },
-    { mois: 'Déc 2023', leads: 48 },
-    { mois: 'Jan 2024', leads: 61 },
-    { mois: 'Fév 2024', leads: 38 },
-  ];
+  // Données factices de chantiers
+  const [chantiers, setChantiers] = useState<Chantier[]>([
+    {
+      id: 'CH-001',
+      client: 'Mme Colin',
+      adresse: '15 Rue de la Paix, Lyon',
+      date: '05/11/2024',
+      type: 'Fuite lavabo',
+      statut: 'Terminé',
+      photos: [
+        { id: 'P-001', url: '/placeholder.svg', type: 'avant', nom: 'avant-1.jpg' },
+        { id: 'P-002', url: '/placeholder.svg', type: 'apres', nom: 'apres-1.jpg' },
+      ],
+      note: 'Fuite importante sous évier',
+      resumeIA: 'Fuite réparée sous évier, joint changé, temps d\'intervention : 45 min.',
+      dureeIntervention: '45 min',
+    },
+    {
+      id: 'CH-002',
+      client: 'M. Leroy',
+      adresse: '42 Avenue des Champs, Lyon',
+      date: '05/11/2024',
+      type: 'Pose douche',
+      statut: 'Terminé',
+      photos: [
+        { id: 'P-003', url: '/placeholder.svg', type: 'avant', nom: 'avant-2.jpg' },
+        { id: 'P-004', url: '/placeholder.svg', type: 'apres', nom: 'apres-2.jpg' },
+      ],
+      resumeIA: 'Pose douche complète, carrelage refait, temps d\'intervention : 3h.',
+      dureeIntervention: '3h',
+    },
+    {
+      id: 'CH-003',
+      client: 'M. Giraud',
+      adresse: '8 Place Bellecour, Lyon',
+      date: '06/11/2024',
+      type: 'Entretien chauffe-eau',
+      statut: 'En cours',
+      photos: [],
+    },
+  ]);
 
-  const conversionData = [
-    { mois: 'Oct 2023', taux: 65 },
-    { mois: 'Nov 2023', taux: 72 },
-    { mois: 'Déc 2023', taux: 68 },
-    { mois: 'Jan 2024', taux: 75 },
-    { mois: 'Fév 2024', taux: 71 },
-  ];
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatut, setFilterStatut] = useState<'Tous' | 'En cours' | 'Terminé'>('Tous');
+  const [triPar, setTriPar] = useState<'date' | 'type' | 'client'>('date');
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedChantier, setSelectedChantier] = useState<Chantier | null>(null);
+  const [photosAvant, setPhotosAvant] = useState<File[]>([]);
+  const [photosApres, setPhotosApres] = useState<File[]>([]);
 
-  const commissionsData = [
-    { mois: 'Oct 2023', montant: 8500 },
-    { mois: 'Nov 2023', montant: 10200 },
-    { mois: 'Déc 2023', montant: 12350 },
-    { mois: 'Jan 2024', montant: 15250 },
-    { mois: 'Fév 2024', montant: 9600 },
-  ];
-
-  const partenairesRanking = [
-    { nom: 'Crédit Mutuel', dossiers: 28, taux: 92, commission: 12500 },
-    { nom: 'Crédit Agricole', dossiers: 22, taux: 85, commission: 10200 },
-    { nom: 'BNP Paribas', dossiers: 18, taux: 78, commission: 8500 },
-    { nom: 'Société Générale', dossiers: 15, taux: 70, commission: 6800 },
-  ];
-
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
-
-  const handleExport = () => {
-    toast({
-      title: 'Export réussi',
-      description: 'Données exportées avec succès',
+  // Filtrer et trier les chantiers
+  const filteredAndSortedChantiers = chantiers
+    .filter((chantier) => {
+      const matchesSearch =
+        chantier.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        chantier.adresse.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        chantier.type.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatut = filterStatut === 'Tous' || chantier.statut === filterStatut;
+      return matchesSearch && matchesStatut;
+    })
+    .sort((a, b) => {
+      switch (triPar) {
+        case 'date':
+          return new Date(b.date.split('/').reverse().join('-')).getTime() - new Date(a.date.split('/').reverse().join('-')).getTime();
+        case 'type':
+          return a.type.localeCompare(b.type);
+        case 'client':
+          return a.client.localeCompare(b.client);
+        default:
+          return 0;
+      }
     });
+
+  const handleAddChantier = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+
+    // Générer résumé IA automatique
+    const type = formData.get('type') as string;
+    const note = formData.get('note') as string;
+    const duree = formData.get('dureeIntervention') as string;
+    
+    // Simuler génération IA
+    const resumeIA = `${type}${note ? `, ${note}` : ''}${duree ? `, temps d'intervention : ${duree}` : ''}.`;
+
+    // Créer les photos à partir des fichiers uploadés
+    const photos: Photo[] = [
+      ...photosAvant.map((file, index) => ({
+        id: `P-${Date.now()}-avant-${index}`,
+        url: URL.createObjectURL(file),
+        type: 'avant' as const,
+        nom: file.name,
+      })),
+      ...photosApres.map((file, index) => ({
+        id: `P-${Date.now()}-apres-${index}`,
+        url: URL.createObjectURL(file),
+        type: 'apres' as const,
+        nom: file.name,
+      })),
+    ];
+
+    const newChantier: Chantier = {
+      id: `CH-${String(chantiers.length + 1).padStart(3, '0')}`,
+      client: formData.get('client') as string,
+      adresse: formData.get('adresse') as string,
+      date: formData.get('date') as string || new Date().toLocaleDateString('fr-FR'),
+      type: type,
+      statut: 'Terminé',
+      photos,
+      note: note || undefined,
+      resumeIA,
+      dureeIntervention: duree || undefined,
+    };
+
+    setChantiers([newChantier, ...chantiers]);
+
+    toast({
+      title: 'Chantier ajouté',
+      description: `Le chantier a été ajouté avec succès. Résumé IA généré automatiquement.`,
+    });
+
+    setOpenDialog(false);
+    setPhotosAvant([]);
+    setPhotosApres([]);
+  };
+
+  const handlePhotoUpload = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    type: 'avant' | 'apres'
+  ) => {
+    const files = Array.from(e.target.files || []);
+    if (type === 'avant') {
+      setPhotosAvant([...photosAvant, ...files]);
+    } else {
+      setPhotosApres([...photosApres, ...files]);
+    }
+    toast({
+      title: 'Photos ajoutées',
+      description: `${files.length} photo(s) ${type === 'avant' ? 'avant' : 'après'} ajoutée(s).`,
+    });
+  };
+
+  const removePhoto = (index: number, type: 'avant' | 'apres') => {
+    if (type === 'avant') {
+      setPhotosAvant(photosAvant.filter((_, i) => i !== index));
+    } else {
+      setPhotosApres(photosApres.filter((_, i) => i !== index));
+    }
+  };
+
+  const handleExportPDF = (chantierId: string) => {
+    const chantier = chantiers.find(c => c.id === chantierId);
+    if (chantier) {
+      toast({
+        title: 'Export PDF en cours',
+        description: `Rapport PDF du chantier ${chantierId} en cours de génération...`,
+      });
+      // Simulation d'export PDF
+      setTimeout(() => {
+        toast({
+          title: 'PDF exporté',
+          description: `Le rapport PDF du chantier ${chantierId} a été généré avec succès.`,
+        });
+      }, 1000);
+    }
+  };
+
+  const genererResumeIA = (chantier: Chantier): string => {
+    if (chantier.resumeIA) {
+      return chantier.resumeIA;
+    }
+    // Génération automatique si pas de résumé
+    return `${chantier.type}${chantier.dureeIntervention ? `, temps d'intervention : ${chantier.dureeIntervention}` : ''}.`;
+  };
+
+  const getStatutBadge = (statut: Chantier['statut']) => {
+    switch (statut) {
+      case 'Terminé':
+        return <Badge className="bg-green-500/20 text-green-400 border-green-500/30">✅ Terminé</Badge>;
+      case 'En cours':
+        return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">⏳ En cours</Badge>;
+      default:
+        return <Badge>{statut}</Badge>;
+    }
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Analyses et Statistiques</h1>
+          <h1 className="text-3xl font-bold">Chantiers & Photos</h1>
           <p className="mt-2 text-muted-foreground">
-            Visualisez vos performances et résultats
+            Suivez vos chantiers en cours et stockez les photos avant/après
           </p>
         </div>
-        <Button onClick={handleExport}>
-          <Download className="mr-2 h-4 w-4" />
-          Exporter les données
-        </Button>
+        <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+          <DialogTrigger asChild>
+            <Button className="bg-yellow-500 hover:bg-yellow-600 text-black">
+              <Plus className="mr-2 h-4 w-4" />
+              Ajouter un chantier terminé
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Ajouter un chantier terminé</DialogTitle>
+              <DialogDescription>
+                Ajoutez un chantier terminé avec photos avant/après et notes
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleAddChantier} className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="client">Client *</Label>
+                  <Input id="client" name="client" placeholder="Mme/M. Nom" required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="date">Date *</Label>
+                  <Input id="date" name="date" type="date" defaultValue={new Date().toISOString().split('T')[0]} required />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="adresse">Adresse *</Label>
+                <Input id="adresse" name="adresse" placeholder="Adresse complète" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="type">Type de chantier *</Label>
+                <Input id="type" name="type" placeholder="Ex: Fuite lavabo, Pose douche..." required />
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="dureeIntervention">Durée d'intervention</Label>
+                  <Input id="dureeIntervention" name="dureeIntervention" placeholder="Ex: 45 min, 2h..." />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="statut">Statut</Label>
+                  <Select name="statut" defaultValue="Terminé">
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Terminé">Terminé</SelectItem>
+                      <SelectItem value="En cours">En cours</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Upload photos avant */}
+              <div className="space-y-2">
+                <Label>Photos avant</Label>
+                <div className="border-2 border-dashed rounded-lg p-4">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => handlePhotoUpload(e, 'avant')}
+                    className="cursor-pointer"
+                  />
+                  {photosAvant.length > 0 && (
+                    <div className="mt-4 grid grid-cols-4 gap-2">
+                      {photosAvant.map((file, index) => (
+                        <div key={index} className="relative group">
+                          <img
+                            src={URL.createObjectURL(file)}
+                            alt={`Avant ${index + 1}`}
+                            className="w-full h-20 object-cover rounded border"
+                          />
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="destructive"
+                            className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => removePhoto(index, 'avant')}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Upload photos après */}
+              <div className="space-y-2">
+                <Label>Photos après</Label>
+                <div className="border-2 border-dashed rounded-lg p-4">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => handlePhotoUpload(e, 'apres')}
+                    className="cursor-pointer"
+                  />
+                  {photosApres.length > 0 && (
+                    <div className="mt-4 grid grid-cols-4 gap-2">
+                      {photosApres.map((file, index) => (
+                        <div key={index} className="relative group">
+                          <img
+                            src={URL.createObjectURL(file)}
+                            alt={`Après ${index + 1}`}
+                            className="w-full h-20 object-cover rounded border"
+                          />
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="destructive"
+                            className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => removePhoto(index, 'apres')}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Zone de note rapide */}
+              <div className="space-y-2">
+                <Label htmlFor="note">Note rapide</Label>
+                <Textarea
+                  id="note"
+                  name="note"
+                  rows={3}
+                  placeholder="Notes sur le chantier..."
+                />
+                <p className="text-xs text-muted-foreground">
+                  L'IA générera automatiquement un résumé à partir de ces informations
+                </p>
+              </div>
+
+              {/* Résumé IA (prévisualisation) */}
+              {(photosAvant.length > 0 || photosApres.length > 0) && (
+                <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <Sparkles className="h-4 w-4 text-blue-400 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-medium text-blue-400 mb-1">Résumé IA (généré automatiquement)</p>
+                      <p className="text-sm text-muted-foreground">
+                        Le résumé sera généré lors de l'ajout du chantier
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <Button type="submit" className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black">
+                  Ajouter le chantier
+                </Button>
+                <Button type="button" variant="outline" onClick={() => setOpenDialog(false)}>
+                  Annuler
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
-      {/* Indicateurs clés */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <Users className="h-8 w-8 text-blue-600" />
-              <div>
-                <div className="text-2xl font-bold">244</div>
-                <p className="text-xs text-muted-foreground">Total leads</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-8 w-8 text-green-600" />
-              <div>
-                <div className="text-2xl font-bold">71%</div>
-                <p className="text-xs text-muted-foreground">Taux de conversion</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <Clock className="h-8 w-8 text-orange-600" />
-              <div>
-                <div className="text-2xl font-bold">9 jours</div>
-                <p className="text-xs text-muted-foreground">Délai moyen</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <DollarSign className="h-8 w-8 text-purple-600" />
-              <div>
-                <div className="text-2xl font-bold">72.4k €</div>
-                <p className="text-xs text-muted-foreground">Revenus annuels</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Graphiques */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Évolution des leads</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={leadsData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="mois" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="leads" stroke="#0088FE" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Taux de conversion</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={conversionData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="mois" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="taux" fill="#00C49F" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Évolution des commissions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={commissionsData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="mois" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="montant" fill="#FF8042" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Répartition par partenaire</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={partenairesRanking}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ nom, dossiers }) => `${nom}: ${dossiers}`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="dossiers"
-                >
-                  {partenairesRanking.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Classement des partenaires */}
+      {/* Filtres et tri */}
       <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Award className="h-5 w-5" />
-            <CardTitle>Classement des partenaires</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {partenairesRanking.map((partenaire, index) => (
-              <div
-                key={partenaire.nom}
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold">
-                    {index + 1}
-                  </div>
-                  <div>
-                    <p className="font-semibold">{partenaire.nom}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {partenaire.dossiers} dossiers • {partenaire.commission.toLocaleString('fr-FR')} €
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <Badge className="bg-green-100 text-green-800">
-                    {partenaire.taux}% taux d'acceptation
-                  </Badge>
-                </div>
+        <CardContent className="pt-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Rechercher un chantier (client, adresse, type)..."
+                  className="pl-10"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
-            ))}
+            </div>
+            <Select value={filterStatut} onValueChange={(value) => setFilterStatut(value as 'Tous' | 'En cours' | 'Terminé')}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Statut" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Tous">Tous les statuts</SelectItem>
+                <SelectItem value="Terminé">✅ Terminé</SelectItem>
+                <SelectItem value="En cours">⏳ En cours</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={triPar} onValueChange={(value) => setTriPar(value as 'date' | 'type' | 'client')}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Trier par" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="date">📅 Par date</SelectItem>
+                <SelectItem value="type">🔧 Par type</SelectItem>
+                <SelectItem value="client">👤 Par client</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
+
+      {/* Liste des chantiers */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Liste des chantiers ({filteredAndSortedChantiers.length})</CardTitle>
+          <CardDescription>
+            Tous vos chantiers avec photos avant/après et résumés IA
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Client</TableHead>
+                  <TableHead>Adresse</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Statut</TableHead>
+                  <TableHead>Photos</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredAndSortedChantiers.map((chantier) => (
+                  <TableRow key={chantier.id}>
+                    <TableCell className="font-medium">{chantier.client}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground max-w-xs truncate">
+                        <MapPin className="h-3 w-3 flex-shrink-0" />
+                        {chantier.adresse}
+                      </div>
+                    </TableCell>
+                    <TableCell>{chantier.date}</TableCell>
+                    <TableCell>{chantier.type}</TableCell>
+                    <TableCell>{getStatutBadge(chantier.statut)}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <Badge variant="outline" className="text-xs">
+                          {chantier.photos.filter(p => p.type === 'avant').length} avant
+                        </Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {chantier.photos.filter(p => p.type === 'apres').length} après
+                        </Badge>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setSelectedChantier(chantier)}
+                        >
+                          Voir détails
+                        </Button>
+                        {chantier.statut === 'Terminé' && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleExportPDF(chantier.id)}
+                          >
+                            <Download className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            {filteredAndSortedChantiers.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                Aucun chantier trouvé
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Dialog détails chantier */}
+      {selectedChantier && (
+        <Dialog open={!!selectedChantier} onOpenChange={() => setSelectedChantier(null)}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{selectedChantier.type} - {selectedChantier.client}</DialogTitle>
+              <DialogDescription>
+                Détails du chantier avec photos et résumé IA
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-6">
+              {/* Informations générales */}
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <Label className="text-sm text-muted-foreground flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    Client
+                  </Label>
+                  <p className="font-medium">{selectedChantier.client}</p>
+                </div>
+                <div>
+                  <Label className="text-sm text-muted-foreground flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    Date
+                  </Label>
+                  <p className="font-medium">{selectedChantier.date}</p>
+                </div>
+                <div className="col-span-2">
+                  <Label className="text-sm text-muted-foreground flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    Adresse
+                  </Label>
+                  <p className="font-medium">{selectedChantier.adresse}</p>
+                </div>
+                {selectedChantier.dureeIntervention && (
+                  <div>
+                    <Label className="text-sm text-muted-foreground flex items-center gap-2">
+                      <Clock className="h-4 w-4" />
+                      Durée
+                    </Label>
+                    <p className="font-medium">{selectedChantier.dureeIntervention}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Résumé IA */}
+              {selectedChantier.resumeIA && (
+                <Card className="bg-blue-500/10 border-blue-500/30">
+                  <CardContent className="pt-6">
+                    <div className="flex items-start gap-3">
+                      <Sparkles className="h-5 w-5 text-blue-400 mt-0.5" />
+                      <div>
+                        <h3 className="font-semibold text-blue-400 mb-2">Résumé IA automatique</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {genererResumeIA(selectedChantier)}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Photos avant */}
+              {selectedChantier.photos.filter(p => p.type === 'avant').length > 0 && (
+                <div>
+                  <Label className="text-sm font-semibold mb-3 block">Photos avant</Label>
+                  <div className="grid grid-cols-4 gap-4">
+                    {selectedChantier.photos.filter(p => p.type === 'avant').map((photo) => (
+                      <div key={photo.id} className="relative">
+                        <img
+                          src={photo.url}
+                          alt={photo.nom}
+                          className="w-full h-32 object-cover rounded-lg border"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Photos après */}
+              {selectedChantier.photos.filter(p => p.type === 'apres').length > 0 && (
+                <div>
+                  <Label className="text-sm font-semibold mb-3 block">Photos après</Label>
+                  <div className="grid grid-cols-4 gap-4">
+                    {selectedChantier.photos.filter(p => p.type === 'apres').map((photo) => (
+                      <div key={photo.id} className="relative">
+                        <img
+                          src={photo.url}
+                          alt={photo.nom}
+                          className="w-full h-32 object-cover rounded-lg border"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Note */}
+              {selectedChantier.note && (
+                <div>
+                  <Label className="text-sm font-semibold mb-2 block">Note rapide</Label>
+                  <div className="p-3 bg-muted rounded-lg">
+                    <p className="text-sm">{selectedChantier.note}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Bouton export PDF */}
+              {selectedChantier.statut === 'Terminé' && (
+                <Button
+                  className="w-full bg-yellow-500 hover:bg-yellow-600 text-black"
+                  onClick={() => handleExportPDF(selectedChantier.id)}
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Exporter rapport PDF chantier
+                </Button>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

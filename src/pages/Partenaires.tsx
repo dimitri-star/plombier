@@ -1,161 +1,312 @@
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Search, Mail, Phone, Building2, User, FileText, TrendingUp } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Plus, Search, Mail, Phone, MapPin, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+
+interface Client {
+  id: string;
+  nom: string;
+  prenom?: string;
+  adresse: string;
+  ville: string;
+  codePostal: string;
+  telephone: string;
+  email: string;
+  dateCreation: string;
+  notes?: string;
+}
+
+interface Intervention {
+  id: string;
+  date: string;
+  type: string;
+  statut: 'Planifiée' | 'En cours' | 'Terminée' | 'Annulée';
+  montant?: number;
+}
+
+interface Devis {
+  id: string;
+  date: string;
+  travail: string;
+  montant: number;
+  statut: 'En attente' | 'Signé' | 'Refusé';
+}
+
+interface Facture {
+  id: string;
+  date: string;
+  montant: number;
+  statut: 'En attente' | 'Payée' | 'En retard';
+}
 
 export default function Partenaires() {
   const { toast } = useToast();
 
-  // Données factices
-  const [partenaires, setPartenaires] = useState([
+  // Données factices de clients
+  const [clients, setClients] = useState<Client[]>([
     {
-      id: 1,
-      nom: 'Crédit Agricole',
-      type: 'Banque',
-      contact_nom: 'Sophie Martin',
-      contact_email: 'sophie.martin@credit-agricole.fr',
-      contact_telephone: '01 23 45 67 89',
-      dossiers_en_cours: 5,
-      taux_acceptation: 85,
-      note_interne: 'Excellent partenaire, délais respectés et excellent taux d\'acceptation',
-      qualite: 'Excellente',
+      id: 'C-001',
+      nom: 'Colin',
+      prenom: 'Marie',
+      adresse: '15 Rue de la Paix',
+      ville: 'Lyon',
+      codePostal: '69001',
+      telephone: '06 12 34 56 78',
+      email: 'marie.colin@email.com',
+      dateCreation: '2024-01-15',
+      notes: 'Client fidèle, préfère les interventions le matin.',
     },
     {
-      id: 2,
-      nom: 'BNP Paribas',
-      type: 'Banque',
-      contact_nom: 'Pierre Dupont',
-      contact_email: 'pierre.dupont@bnpparibas.fr',
-      contact_telephone: '01 34 56 78 90',
-      dossiers_en_cours: 3,
-      taux_acceptation: 78,
-      note_interne: 'Bon partenaire, quelques retards occasionnels sur les réponses',
-      qualite: 'Bonne',
+      id: 'C-002',
+      nom: 'Leroy',
+      prenom: 'Jean',
+      adresse: '42 Avenue des Champs',
+      ville: 'Lyon',
+      codePostal: '69002',
+      telephone: '06 98 76 54 32',
+      email: 'jean.leroy@email.com',
+      dateCreation: '2024-02-20',
+      notes: 'Très satisfait des dernières interventions.',
     },
     {
-      id: 3,
-      nom: 'Crédit Mutuel',
-      type: 'Banque',
-      contact_nom: 'Marie Laurent',
-      contact_email: 'marie.laurent@creditmutuel.fr',
-      contact_telephone: '01 45 67 89 01',
-      dossiers_en_cours: 7,
-      taux_acceptation: 92,
-      note_interne: 'Excellent partenaire, très réactif et taux d\'acceptation élevé',
-      qualite: 'Excellente',
+      id: 'C-003',
+      nom: 'Giraud',
+      prenom: 'Sophie',
+      adresse: '8 Place Bellecour',
+      ville: 'Lyon',
+      codePostal: '69002',
+      telephone: '06 11 22 33 44',
+      email: 'sophie.giraud@email.com',
+      dateCreation: '2024-03-10',
+      notes: 'Client régulier, interventions d\'entretien.',
     },
     {
-      id: 4,
-      nom: 'Société Générale',
-      type: 'Banque',
-      contact_nom: 'Jean Bernard',
-      contact_email: 'jean.bernard@socgen.fr',
-      contact_telephone: '01 56 78 90 12',
-      dossiers_en_cours: 2,
-      taux_acceptation: 70,
-      note_interne: 'Partenaire correct mais délais parfois longs',
-      qualite: 'Moyenne',
+      id: 'C-004',
+      nom: 'Dubois',
+      prenom: 'Pierre',
+      adresse: '23 Rue Victor Hugo',
+      ville: 'Villeurbanne',
+      codePostal: '69100',
+      telephone: '06 55 66 77 88',
+      email: 'pierre.dubois@email.com',
+      dateCreation: '2024-04-05',
     },
   ]);
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [openDialog, setOpenDialog] = useState(false);
-  const [selectedPartenaire, setSelectedPartenaire] = useState<any>(null);
-
-  const filteredPartenaires = partenaires.filter((partenaire) =>
-    partenaire.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    partenaire.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    partenaire.contact_nom.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const getQualiteColor = (qualite: string) => {
-    switch (qualite) {
-      case 'Excellente':
-        return 'bg-green-100 text-green-800';
-      case 'Bonne':
-        return 'bg-blue-100 text-blue-800';
-      case 'Moyenne':
-        return 'bg-yellow-100 text-yellow-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
+  // Données factices : historique par client
+  const getInterventionsForClient = (clientId: string): Intervention[] => {
+    const interventionsMap: { [key: string]: Intervention[] } = {
+      'C-001': [
+        { id: 'I-001', date: '05/11/2024', type: 'Fuite lavabo', statut: 'Terminée', montant: 180 },
+        { id: 'I-005', date: '15/09/2024', type: 'Fuite évier', statut: 'Terminée', montant: 150 },
+        { id: 'I-008', date: '20/08/2024', type: 'Réparation WC', statut: 'Terminée', montant: 120 },
+      ],
+      'C-002': [
+        { id: 'I-002', date: '05/11/2024', type: 'Pose douche', statut: 'Terminée', montant: 690 },
+        { id: 'I-006', date: '10/10/2024', type: 'Ballon ECS', statut: 'Terminée', montant: 850 },
+      ],
+      'C-003': [
+        { id: 'I-003', date: '06/11/2024', type: 'Entretien chauffe-eau', statut: 'Planifiée', montant: 200 },
+        { id: 'I-007', date: '01/10/2024', type: 'Révision annuelle', statut: 'Terminée', montant: 180 },
+      ],
+      'C-004': [
+        { id: 'I-004', date: '07/11/2024', type: 'Débouchage canalisation', statut: 'Planifiée', montant: 250 },
+      ],
+    };
+    return interventionsMap[clientId] || [];
   };
 
-  const handleAddPartenaire = (e: React.FormEvent<HTMLFormElement>) => {
+  const getDevisForClient = (clientId: string): Devis[] => {
+    const devisMap: { [key: string]: Devis[] } = {
+      'C-001': [
+        { id: 'D-241', date: '02/11/2024', travail: 'Fuite évier', montant: 180, statut: 'En attente' },
+        { id: 'D-238', date: '10/09/2024', travail: 'Réparation WC', montant: 120, statut: 'Signé' },
+      ],
+      'C-002': [
+        { id: 'D-242', date: '01/11/2024', travail: 'Ballon ECS', montant: 690, statut: 'Signé' },
+        { id: 'D-239', date: '05/10/2024', travail: 'Pose douche', montant: 690, statut: 'Signé' },
+      ],
+      'C-003': [
+        { id: 'D-243', date: '30/10/2024', travail: 'Canalisation', montant: 1150, statut: 'Refusé' },
+      ],
+      'C-004': [
+        { id: 'D-244', date: '03/11/2024', travail: 'Débouchage canalisation', montant: 250, statut: 'En attente' },
+      ],
+    };
+    return devisMap[clientId] || [];
+  };
+
+  const getFacturesForClient = (clientId: string): Facture[] => {
+    const facturesMap: { [key: string]: Facture[] } = {
+      'C-001': [
+        { id: 'F-101', date: '06/11/2024', montant: 180, statut: 'Payée' },
+        { id: 'F-098', date: '16/09/2024', montant: 150, statut: 'Payée' },
+        { id: 'F-095', date: '21/08/2024', montant: 120, statut: 'Payée' },
+      ],
+      'C-002': [
+        { id: 'F-102', date: '06/11/2024', montant: 690, statut: 'Payée' },
+        { id: 'F-099', date: '11/10/2024', montant: 850, statut: 'Payée' },
+      ],
+      'C-003': [
+        { id: 'F-100', date: '02/10/2024', montant: 180, statut: 'Payée' },
+      ],
+      'C-004': [],
+    };
+    return facturesMap[clientId] || [];
+  };
+
+  // Générer résumé IA pour un client
+  const genererResumeIA = (client: Client): string => {
+    const interventions = getInterventionsForClient(client.id);
+    const devis = getDevisForClient(client.id);
+    const factures = getFacturesForClient(client.id);
+    
+    const interventionsTerminees = interventions.filter(i => i.statut === 'Terminée');
+    const urgences = interventions.filter(i => i.type.toLowerCase().includes('fuite') || i.type.toLowerCase().includes('urgence'));
+    
+    const totalInterventions = interventionsTerminees.length;
+    const totalUrgences = urgences.length;
+    const totalDevis = devis.length;
+    const totalFactures = factures.length;
+    
+    return `Ce client a eu ${totalInterventions} intervention${totalInterventions > 1 ? 's' : ''} cette année, dont ${totalUrgences} urgence${totalUrgences > 1 ? 's' : ''}. ${totalDevis > 0 ? `${totalDevis} devis créé${totalDevis > 1 ? 's' : ''}.` : ''} ${totalFactures > 0 ? `${totalFactures} facture${totalFactures > 1 ? 's' : ''} émise${totalFactures > 1 ? 's' : ''}.` : ''}${client.notes ? ` Notes : ${client.notes}` : ''}`;
+  };
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+
+  const filteredClients = clients.filter((client) => {
+    const fullName = `${client.prenom || ''} ${client.nom}`.toLowerCase();
+    return (
+      fullName.includes(searchTerm.toLowerCase()) ||
+      client.ville.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      client.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
+
+  const handleAddClient = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    
+    const newClient: Client = {
+      id: `C-${String(clients.length + 1).padStart(3, '0')}`,
+      nom: formData.get('nom') as string,
+      prenom: formData.get('prenom') as string || undefined,
+      adresse: formData.get('adresse') as string,
+      ville: formData.get('ville') as string,
+      codePostal: formData.get('codePostal') as string,
+      telephone: formData.get('telephone') as string,
+      email: formData.get('email') as string,
+      dateCreation: new Date().toISOString().split('T')[0],
+      notes: formData.get('notes') as string || undefined,
+    };
+
+    setClients([newClient, ...clients]);
+    
     toast({
-      title: 'Succès',
-      description: 'Partenaire ajouté avec succès',
+      title: 'Client créé',
+      description: `Le client ${newClient.prenom || ''} ${newClient.nom} a été ajouté avec succès.`,
     });
+    
     setOpenDialog(false);
+  };
+
+  const getStatutBadge = (statut: string) => {
+    switch (statut) {
+      case 'Terminée':
+      case 'Payée':
+      case 'Signé':
+        return <Badge className="bg-green-500/20 text-green-400 border-green-500/30">✅ {statut}</Badge>;
+      case 'En cours':
+      case 'En attente':
+        return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">⏳ {statut}</Badge>;
+      case 'Refusé':
+      case 'En retard':
+        return <Badge className="bg-red-500/20 text-red-400 border-red-500/30">❌ {statut}</Badge>;
+      case 'Planifiée':
+        return <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">📅 {statut}</Badge>;
+      case 'Annulée':
+        return <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/30">❌ {statut}</Badge>;
+      default:
+        return <Badge>{statut}</Badge>;
+    }
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Partenaires</h1>
+          <h1 className="text-3xl font-bold">Clients & Historique</h1>
           <p className="mt-2 text-muted-foreground">
-            Gérez vos relations professionnelles
+            Fiche complète de chaque client et historique des travaux effectués
           </p>
         </div>
         <Dialog open={openDialog} onOpenChange={setOpenDialog}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="bg-yellow-500 hover:bg-yellow-600 text-black">
               <Plus className="mr-2 h-4 w-4" />
-              Ajouter un partenaire
+              Créer nouveau client
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Nouveau partenaire</DialogTitle>
+              <DialogTitle>Nouveau client</DialogTitle>
+              <DialogDescription>
+                Ajoutez un nouveau client à votre base de données
+              </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleAddPartenaire} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="nom">Nom du partenaire</Label>
-                <Input id="nom" name="nom" required />
+            <form onSubmit={handleAddClient} className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="nom">Nom *</Label>
+                  <Input id="nom" name="nom" required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="prenom">Prénom</Label>
+                  <Input id="prenom" name="prenom" />
+                </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="type">Type de partenaire</Label>
-                <Select name="type" required>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner un type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Banque">Banque</SelectItem>
-                    <SelectItem value="Assurance">Assurance</SelectItem>
-                    <SelectItem value="Notaire">Notaire</SelectItem>
-                    <SelectItem value="Expert-comptable">Expert-comptable</SelectItem>
-                    <SelectItem value="Autre">Autre</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="adresse">Adresse *</Label>
+                <Input id="adresse" name="adresse" required />
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="codePostal">Code postal *</Label>
+                  <Input id="codePostal" name="codePostal" required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ville">Ville *</Label>
+                  <Input id="ville" name="ville" required />
+                </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="contact_nom">Contact référent</Label>
-                <Input id="contact_nom" name="contact_nom" required />
+                <Label htmlFor="telephone">Téléphone *</Label>
+                <Input id="telephone" name="telephone" required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="contact_email">Email</Label>
-                <Input id="contact_email" name="contact_email" type="email" required />
+                <Label htmlFor="email">Email *</Label>
+                <Input id="email" name="email" type="email" required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="contact_telephone">Téléphone</Label>
-                <Input id="contact_telephone" name="contact_telephone" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="note_interne">Notes internes</Label>
-                <Textarea id="note_interne" name="note_interne" rows={3} />
+                <Label htmlFor="notes">Notes du plombier</Label>
+                <Textarea id="notes" name="notes" rows={3} placeholder="Notes internes sur le client..." />
               </div>
               <div className="flex gap-2">
-                <Button type="submit" className="flex-1">Ajouter</Button>
+                <Button type="submit" className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black">
+                  Créer le client
+                </Button>
                 <Button type="button" variant="outline" onClick={() => setOpenDialog(false)}>
                   Annuler
                 </Button>
@@ -165,54 +316,13 @@ export default function Partenaires() {
         </Dialog>
       </div>
 
-      {/* Stats globales */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <Building2 className="h-8 w-8 text-blue-600" />
-              <div>
-                <div className="text-2xl font-bold">{partenaires.length}</div>
-                <p className="text-xs text-muted-foreground">Partenaires actifs</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <FileText className="h-8 w-8 text-green-600" />
-              <div>
-                <div className="text-2xl font-bold">
-                  {partenaires.reduce((acc, p) => acc + p.dossiers_en_cours, 0)}
-                </div>
-                <p className="text-xs text-muted-foreground">Dossiers en cours</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-8 w-8 text-purple-600" />
-              <div>
-                <div className="text-2xl font-bold">
-                  {Math.round(partenaires.reduce((acc, p) => acc + p.taux_acceptation, 0) / partenaires.length)}%
-                </div>
-                <p className="text-xs text-muted-foreground">Taux d'acceptation moyen</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Recherche */}
       <Card>
         <CardContent className="pt-6">
           <div className="relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Rechercher un partenaire..."
+              placeholder="Recherche rapide par nom ou ville..."
               className="pl-10"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -221,159 +331,275 @@ export default function Partenaires() {
         </CardContent>
       </Card>
 
-      {/* Tableau des partenaires */}
+      {/* Liste des clients */}
       <Card>
         <CardHeader>
-          <CardTitle>Liste des partenaires ({filteredPartenaires.length})</CardTitle>
+          <CardTitle>Liste des clients ({filteredClients.length})</CardTitle>
+          <CardDescription>
+            Tous vos clients avec leurs coordonnées complètes
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nom</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Téléphone</TableHead>
-                <TableHead>Dossiers</TableHead>
-                <TableHead>Taux</TableHead>
-                <TableHead>Qualité</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredPartenaires.map((partenaire) => (
-                <TableRow key={partenaire.id}>
-                  <TableCell className="font-medium">{partenaire.nom}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{partenaire.type}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <User className="h-4 w-4 text-muted-foreground" />
-                      {partenaire.contact_nom}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <a href={`mailto:${partenaire.contact_email}`} className="text-sm hover:text-primary">
-                        {partenaire.contact_email}
-                      </a>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                      <a href={`tel:${partenaire.contact_telephone}`} className="text-sm hover:text-primary">
-                        {partenaire.contact_telephone}
-                      </a>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge>{partenaire.dossiers_en_cours}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-green-600" />
-                      <span className="font-semibold">{partenaire.taux_acceptation}%</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getQualiteColor(partenaire.qualite)}>
-                      {partenaire.qualite}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setSelectedPartenaire(partenaire)}
-                    >
-                      Voir détails
-                    </Button>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nom</TableHead>
+                  <TableHead>Adresse</TableHead>
+                  <TableHead>Téléphone</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          {filteredPartenaires.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              Aucun partenaire trouvé
-            </div>
-          )}
+              </TableHeader>
+              <TableBody>
+                {filteredClients.map((client) => (
+                  <TableRow key={client.id}>
+                    <TableCell className="font-medium">
+                      {client.prenom ? `${client.prenom} ${client.nom}` : client.nom}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <MapPin className="h-3 w-3" />
+                        {client.adresse}, {client.codePostal} {client.ville}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 text-sm">
+                        <Phone className="h-3 w-3 text-muted-foreground" />
+                        {client.telephone}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 text-sm">
+                        <Mail className="h-3 w-3 text-muted-foreground" />
+                        {client.email}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setSelectedClient(client)}
+                      >
+                        Voir détails
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            {filteredClients.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                Aucun client trouvé
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 
-      {/* Modal détails partenaire */}
-      {selectedPartenaire && (
-        <Dialog open={!!selectedPartenaire} onOpenChange={() => setSelectedPartenaire(null)}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      {/* Modal détails client */}
+      {selectedClient && (
+        <Dialog open={!!selectedClient} onOpenChange={() => setSelectedClient(null)}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>{selectedPartenaire.nom}</DialogTitle>
+              <DialogTitle>
+                {selectedClient.prenom ? `${selectedClient.prenom} ${selectedClient.nom}` : selectedClient.nom}
+              </DialogTitle>
+              <DialogDescription>
+                Fiche complète du client avec historique des travaux
+              </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <Label className="text-sm text-muted-foreground">Type</Label>
-                  <p className="font-medium">{selectedPartenaire.type}</p>
-                </div>
-                <div>
-                  <Label className="text-sm text-muted-foreground">Dossiers en cours</Label>
-                  <p className="font-medium text-lg">{selectedPartenaire.dossiers_en_cours}</p>
-                </div>
-                <div>
-                  <Label className="text-sm text-muted-foreground">Taux d'acceptation</Label>
-                  <p className="font-medium text-lg">{selectedPartenaire.taux_acceptation}%</p>
-                </div>
-                <div>
-                  <Label className="text-sm text-muted-foreground">Qualité</Label>
-                  <Badge className={getQualiteColor(selectedPartenaire.qualite)}>
-                    {selectedPartenaire.qualite}
-                  </Badge>
-                </div>
-              </div>
+            
+            <Tabs defaultValue="coordonnees" className="w-full">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="coordonnees">Coordonnées</TabsTrigger>
+                <TabsTrigger value="interventions">Interventions</TabsTrigger>
+                <TabsTrigger value="devis-factures">Devis / Factures</TabsTrigger>
+                <TabsTrigger value="notes">Notes</TabsTrigger>
+              </TabsList>
 
-              <div>
-                <Label className="text-sm text-muted-foreground">Contact référent</Label>
-                <div className="mt-2 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <span>{selectedPartenaire.contact_nom}</span>
+              {/* Onglet Coordonnées */}
+              <TabsContent value="coordonnees" className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <Label className="text-sm text-muted-foreground">Nom complet</Label>
+                    <p className="font-medium">{selectedClient.prenom ? `${selectedClient.prenom} ${selectedClient.nom}` : selectedClient.nom}</p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <a href={`mailto:${selectedPartenaire.contact_email}`} className="text-sm hover:text-primary">
-                      {selectedPartenaire.contact_email}
-                    </a>
+                  <div>
+                    <Label className="text-sm text-muted-foreground">Date de création</Label>
+                    <p className="font-medium">{new Date(selectedClient.dateCreation).toLocaleDateString('fr-FR')}</p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <a href={`tel:${selectedPartenaire.contact_telephone}`} className="text-sm hover:text-primary">
-                      {selectedPartenaire.contact_telephone}
-                    </a>
+                  <div className="col-span-2">
+                    <Label className="text-sm text-muted-foreground flex items-center gap-2">
+                      <MapPin className="h-4 w-4" />
+                      Adresse
+                    </Label>
+                    <p className="font-medium">{selectedClient.adresse}</p>
+                    <p className="text-sm text-muted-foreground">{selectedClient.codePostal} {selectedClient.ville}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm text-muted-foreground flex items-center gap-2">
+                      <Phone className="h-4 w-4" />
+                      Téléphone
+                    </Label>
+                    <p className="font-medium">{selectedClient.telephone}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm text-muted-foreground flex items-center gap-2">
+                      <Mail className="h-4 w-4" />
+                      Email
+                    </Label>
+                    <p className="font-medium">{selectedClient.email}</p>
                   </div>
                 </div>
-              </div>
 
-              <div>
-                <Label className="text-sm text-muted-foreground">Notes internes</Label>
-                <div className="mt-2 p-3 bg-muted rounded-lg">
-                  <p className="text-sm">{selectedPartenaire.note_interne}</p>
+                {/* Résumé IA */}
+                <Card className="bg-blue-500/10 border-blue-500/30">
+                  <CardContent className="pt-6">
+                    <div className="flex items-start gap-3">
+                      <Sparkles className="h-5 w-5 text-blue-400 mt-0.5" />
+                      <div>
+                        <h3 className="font-semibold text-blue-400 mb-2">Résumé IA</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {genererResumeIA(selectedClient)}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Onglet Interventions */}
+              <TabsContent value="interventions" className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Historique des interventions</CardTitle>
+                    <CardDescription>
+                      Toutes les interventions effectuées pour ce client
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {getInterventionsForClient(selectedClient.id).length > 0 ? (
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Date</TableHead>
+                              <TableHead>Type d'intervention</TableHead>
+                              <TableHead>Statut</TableHead>
+                              <TableHead className="text-right">Montant</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {getInterventionsForClient(selectedClient.id).map((intervention) => (
+                              <TableRow key={intervention.id}>
+                                <TableCell>{intervention.date}</TableCell>
+                                <TableCell className="font-medium">{intervention.type}</TableCell>
+                                <TableCell>{getStatutBadge(intervention.statut)}</TableCell>
+                                <TableCell className="text-right font-semibold">
+                                  {intervention.montant ? `${intervention.montant.toLocaleString('fr-FR')} €` : '-'}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        Aucune intervention pour ce client
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Onglet Devis / Factures */}
+              <TabsContent value="devis-factures" className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  {/* Devis */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Devis liés</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {getDevisForClient(selectedClient.id).length > 0 ? (
+                        <div className="space-y-3">
+                          {getDevisForClient(selectedClient.id).map((devis) => (
+                            <div key={devis.id} className="p-3 border rounded-lg">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="font-medium text-sm">{devis.id}</span>
+                                {getStatutBadge(devis.statut)}
+                              </div>
+                              <p className="text-sm text-muted-foreground mb-1">{devis.travail}</p>
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs text-muted-foreground">{devis.date}</span>
+                                <span className="font-semibold">{devis.montant.toLocaleString('fr-FR')} €</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-muted-foreground text-sm">
+                          Aucun devis pour ce client
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Factures */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Factures liées</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {getFacturesForClient(selectedClient.id).length > 0 ? (
+                        <div className="space-y-3">
+                          {getFacturesForClient(selectedClient.id).map((facture) => (
+                            <div key={facture.id} className="p-3 border rounded-lg">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="font-medium text-sm">{facture.id}</span>
+                                {getStatutBadge(facture.statut)}
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs text-muted-foreground">{facture.date}</span>
+                                <span className="font-semibold">{facture.montant.toLocaleString('fr-FR')} €</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-muted-foreground text-sm">
+                          Aucune facture pour ce client
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
                 </div>
-              </div>
+              </TabsContent>
 
-              <div className="flex gap-2 pt-4 border-t">
-                <Button variant="outline" className="flex-1">
-                  <FileText className="mr-2 h-4 w-4" />
-                  Voir les dossiers
-                </Button>
-                <Button variant="outline" className="flex-1">
-                  <Mail className="mr-2 h-4 w-4" />
-                  Contacter
-                </Button>
-              </div>
-            </div>
+              {/* Onglet Notes */}
+              <TabsContent value="notes" className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Notes du plombier</CardTitle>
+                    <CardDescription>
+                      Notes internes sur ce client
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {selectedClient.notes ? (
+                      <div className="p-4 bg-muted rounded-lg">
+                        <p className="text-sm whitespace-pre-wrap">{selectedClient.notes}</p>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        Aucune note pour ce client
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </DialogContent>
         </Dialog>
       )}

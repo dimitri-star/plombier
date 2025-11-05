@@ -1,14 +1,17 @@
 import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, 
-  Users, 
   FolderOpen, 
   FileText,
+  ClipboardList,
+  Calendar,
+  MessageSquare,
   Handshake,
   DollarSign,
   BarChart3,
   Settings,
-  LogOut
+  LogOut,
+  Wrench
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -16,12 +19,12 @@ import { cn } from '@/lib/utils';
 
 const menuItems = [
   { icon: LayoutDashboard, label: 'Tableau de bord', path: '/dashboard' },
-  { icon: Users, label: 'Prospects', path: '/prospects' },
-  { icon: FolderOpen, label: 'Dossiers', path: '/dossiers' },
-  { icon: FileText, label: 'Documents', path: '/documents' },
-  { icon: Handshake, label: 'Partenaires', path: '/partenaires' },
-  { icon: DollarSign, label: 'Commissions', path: '/commissions' },
-  { icon: BarChart3, label: 'Analyses', path: '/analyses' },
+  { icon: ClipboardList, label: 'Devis & Relances', path: '/prospects' },
+  { icon: Calendar, label: 'Planning & Interventions', path: '/dossiers' },
+  { icon: MessageSquare, label: 'Messages & Suivi', path: '/documents' },
+  { icon: Handshake, label: 'Clients & Historique', path: '/partenaires' },
+  { icon: BarChart3, label: 'Chantiers & Photos', path: '/analyses' },
+  { icon: DollarSign, label: 'Finances & Paiements', path: '/commissions' },
   { icon: Settings, label: 'Paramètres', path: '/parametres' },
 ];
 
@@ -34,18 +37,14 @@ export function Sidebar() {
         {/* Header */}
         <div className="border-b border-white/10 p-6">
           <div className="flex items-center gap-3">
-            {/* Logo MGC dans un carré arrondi */}
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white/5 border border-yellow-500/20">
-              <img 
-                src="/logo-mgc.png" 
-                alt="MGC Logo" 
-                className="h-8 w-8 object-contain"
-              />
+            {/* Logo Plombier avec icône clé à molette */}
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/30 border border-blue-400/30 shadow-lg shadow-blue-500/20">
+              <Wrench className="h-7 w-7 text-blue-400" strokeWidth={2.5} />
             </div>
             
             {/* Titre et nom */}
             <div>
-              <h1 className="text-sm font-bold text-white">Courtier Gestion Pro</h1>
+              <h1 className="text-sm font-bold text-white">Plombier IA Pro</h1>
               {profile && (
                 <p className="text-xs text-white/50">{profile.nom}</p>
               )}
